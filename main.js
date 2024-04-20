@@ -133,7 +133,7 @@ window.onload = () => {
 
 	board.init();
 	blocksTray.init();
-
+	
 	//initGame()
 	showNewPiece();
 	update();
@@ -197,8 +197,8 @@ class Piece {
 	constructor() {
 		this.x = null;
 		this.y = null;
-		this.blocks;
-		this.shadow;
+		this.blocks = []
+		this.shadow = []
 		this.shadowIndexX = null;
 		this.shadowIndexY = null;
 		this.isBeingDragged = false;
@@ -206,20 +206,40 @@ class Piece {
 		this.zIndex = 0;
 	}
 
+	createGrid(pattern) {
+		for(let y in pattern) {
+			this.blocks[y] = []
+			this.shadow[y] = []
+			for(let x in pattern[y]) {
+			//console.log(pattern.length, pattern[y].length)
+			//console.log(y, x, pattern)
+				if(pattern[y][x] === 1) {
+					this.blocks[y][x] = pool.get("block")
+					this.blocks[y][x].img = blockImgs[1]
+					this.blocks[y][x].globalAlpha = 1
+					
+					this.shadow[y][x] = pool.get("block")
+					this.shadow[y][x].img = blockImgs[1]
+					this.shadow[y][x].globalAlpha = .5
+				} else {
+					this.blocks[y][x] = null;
+					this.shadow[y][x] = null;
+				}
+			}
+		}
+	}
 	updateBlocksPosition() {
-		//let blocks = this.blocks;
-		let pieceX = this.x;
-		let pieceY = this.y;
-
-		iterateGrid(this.blocks, function (block, column, row) {
-			if (!block) return;
-
-			let blockOffsetX = column * config.blockWidth;
-			let blockOffsetY = row * config.blockWidth;
-
-			block.x = pieceX + blockOffsetX;
-			block.y = pieceY + blockOffsetY;
-		});
+		for(let y in this.blocks) {
+			for(let x in this.blocks[y]) {
+				let block = this.blocks[y][x]
+				if(block === null) continue
+				
+				let blockOffsetX = x * config.blockWidth
+				let blockOffsetY = y * config.blockWidth
+				block.x = this.x + blockOffsetX
+				block.y = this.y + blockOffsetY
+			}
+		}
 	}
 	updateShadowPosition() {
 		let pieceX = this.x;
@@ -259,23 +279,28 @@ class Piece {
 		this.shadowIndexY = (shadowY - board.y) / config.blockWidth;
 
 		let isSpaceFree = true;
-		iterateGrid(this.shadow, (shadowBlock, column, row, grid) => {
-			if (!isSpaceFree) return;
+		for(let y in this.shadow) {
+			for(let x in this.shadow[y]) {
+				if (!isSpaceFree) continue
+				
+				x = Number(x)
+				y = Number(y)
+				
+				if (this.shadow[y][x]) {
+				// Check if space on board is free
+				let indexX = this.shadowIndexX + x;
+				let indexY = this.shadowIndexY + y;
+				if (board.grid[indexX][indexY] != null)
+					isSpaceFree = false;
+				
+				let blockOffsetX = x * config.blockWidth;
+				let blockOffsetY = y * config.blockWidth;
 
-			if (shadowBlock) {
-				let blockOffsetX = column * config.blockWidth;
-				let blockOffsetY = row * config.blockWidth;
-
-				shadowBlock.x = shadowX + blockOffsetX;
-				shadowBlock.y = shadowY + blockOffsetY;
-
-				// Check is space on board is free
-				let indexX = this.shadowIndexX + column;
-				let indexY = this.shadowIndexY + row;
-
-				if (board.grid[indexX][indexY] != null) isSpaceFree = false;
+				this.shadow[y][x].x = shadowX + blockOffsetX;
+				this.shadow[y][x].y = shadowY + blockOffsetY;
 			}
-		});
+			}
+		}
 
 		if (!isSpaceFree) this.isShadowVisible = false;
 	}
@@ -314,14 +339,15 @@ class Piece {
 		this.updateBlocksPosition();
 
 		// Put each block of piece in the board
-		iterateGrid(this.blocks, (block, indexX, indexY) => {
-			if (block) {
-				indexX += this.shadowIndexX;
-				indexY += this.shadowIndexY;
-
-				board.grid[indexX][indexY] = block;
+		for(let y in this.blocks) {
+			for(let x in this.blocks[y]) {
+				if(this.blocks[y][x]) {
+					let indexX = this.shadowIndexX + Number(x)
+					let indexY = this.shadowIndexY + Number(y)
+					board.grid[indexX][indexY] = this.blocks[y][x]
+				}
 			}
-		});
+		}
 
 		// Remove this piece from screen and tray
 		screen.remove(this,
@@ -368,22 +394,15 @@ class Piece_0 extends Piece {
 		super();
 		this.width = config.blockWidth * 2;
 		this.height = config.blockWidth * 2;
-		this.blocks = createGrid(2, 2);
-		this.shadow = createGrid(2, 2);
-
+		
 		// Pick a random block img
 		let img = blockImgs[Math.floor(Math.random() * blockImgs.length)];
-
-		// Fill blocks grid
-		iterateGrid(this.blocks,
-			(space, x, y, grid) => {
-				grid[x][y] = pool.get("block");
-				grid[x][y].img = img;
-				grid[x][y].globalAlpha = 1
-				this.shadow[x][y] = pool.get('block')
-				this.shadow[x][y].img = img
-				this.shadow[x][y].globalAlpha = .5
-			});
+		
+		let pattern = [
+			[1, 1],
+			[1, 1]
+		]
+		this.createGrid(pattern)
 	}
 
 }
@@ -392,29 +411,15 @@ class Piece_1 extends Piece {
 		super();
 		this.width = config.blockWidth * 3;
 		this.height = config.blockWidth * 3;
-		this.blocks = createGrid(3, 3);
-		this.shadow = createGrid(3, 3);
-
+		
 		// Pick a random block img
 		let img = blockImgs[Math.floor(Math.random() * blockImgs.length)];
-
-		// Fill blocks grid
-		iterateGrid(this.blocks, (space, x, y, grid) => {
-			if (x == 0 || y == 2) {
-				grid[x][y] = pool.get("block");
-				grid[x][y].img = img;
-				grid[x][y].globalAlpha = 1
-			}
-		});
-		// Fill shadow grid
-		iterateGrid(this.shadow,
-			(space, x, y, grid) => {
-				if (x == 0 || y == 2) {
-					grid[x][y] = pool.get("block");
-					grid[x][y].img = img;
-					grid[x][y].globalAlpha = 0.5;
-				}
-			});
+		
+		let pattern = [
+			[0, 0, 1],
+			[0, 0, 1],
+			[1, 1, 1]]
+		this.createGrid(pattern)
 	}
 }
 class Piece_2 extends Piece {
@@ -422,30 +427,14 @@ class Piece_2 extends Piece {
 		super();
 		this.width = config.blockWidth * 3;
 		this.height = config.blockWidth * 2;
-		this.blocks = createGrid(3,
-			2);
-		this.shadow = createGrid(3,
-			2);
 
 		// Pick a random block img
 		let img = blockImgs[Math.floor(Math.random() * blockImgs.length)];
-
-		iterateGrid(this.blocks,
-			(space, x, y, grid) => {
-				if (y == 0 || x == 1) {
-					grid[x][y] = pool.get('block');
-					grid[x][y].img = img;
-					grid[x][y].globalAlpha = 1
-				}
-			});
-		iterateGrid(this.shadow,
-			(space, x, y, grid) => {
-				if (y == 0 || x == 1) {
-					grid[x][y] = pool.get("block");
-					grid[x][y].img = img;
-					grid[x][y].globalAlpha = 0.5;
-				}
-			});
+		
+		let pattern = [
+			[0, 1, 0],
+			[1, 1, 1]]
+		this.createGrid(pattern)
 	}
 }
 class Piece_3 extends Piece {
@@ -453,35 +442,15 @@ class Piece_3 extends Piece {
 		super();
 		this.width = config.blockWidth * 2;
 		this.height = config.blockWidth * 3;
-		this.blocks = createGrid(2,
-			3);
-		this.shadow = createGrid(2,
-			3);
 
 		// Pick a random block img
 		let img = blockImgs[Math.floor(Math.random() * blockImgs.length)];
-
-		// Fill the grids
-		iterateGrid(this.blocks,
-			(space, x, y, grid) => {
-				let upperRight = x == 1 && y == 0;
-				let bottomLeft = x == 0 && y == 2;
-				if (!(upperRight || bottomLeft)) {
-					grid[x][y] = pool.get("block");
-					grid[x][y].img = img;
-					grid[x][y].globalAlpha = 1
-				}
-			});
-		iterateGrid(this.shadow,
-			(space, x, y, grid) => {
-				let upperRight = x == 1 && y == 0;
-				let bottomLeft = x == 0 && y == 2;
-				if (!(upperRight || bottomLeft)) {
-					grid[x][y] = pool.get("block");
-					grid[x][y].img = img;
-					grid[x][y].globalAlpha = 0.5;
-				}
-			});
+		let pattern = [
+			[1, 0],
+			[1, 1],
+			[0, 1]]
+			
+		this.createGrid(pattern)
 	}
 }
 
