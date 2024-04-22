@@ -435,6 +435,7 @@ canvas.addEventListener("touchend", function (ev) {
 			piece.placeOnBoard();
 			showNewPiece();
 			checkBoardColumns()
+			checkBoardRows()
 		}
 
 		piece.isBeingDragged = false;
@@ -466,17 +467,30 @@ function checkBoardColumns() {
 		let columnHaveEmptyParts = false
 
 		for (let row in board.grid[column]) {
-			if (board.grid[column][row]) {
-				continue
-			} else {
-				columnHaveEmptyParts = true
+			if (board.grid[column][row]) continue
+			else columnHaveEmptyParts = true
+			
 				break
-			}
 		}
 
 		if (!columnHaveEmptyParts) {
 			bg = "black"
 		}
+	}
+}
+function checkBoardRows() {
+	for(let row = 0; row < config.boardColumnLength; row++) {
+		let rowHaveEmptyParts = false
+		
+		for(let column = 0; column < config.boardColumnLength; column++) {
+			console.log(column, row)
+			if(board.grid[column][row]) continue
+			else rowHaveEmptyParts = true 
+			
+			break
+		}
+		
+		if(!rowHaveEmptyParts) bg = "black"
 	}
 }
 
