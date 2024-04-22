@@ -185,8 +185,23 @@ class Piece {
 		this.isBeingDragged = false;
 		this.isShadowVisible = false;
 		this.zIndex = 0;
+		
+		// Select a random pattern and create grid 
+		let index = Math.floor(Math.random() * Piece.patterns.length)
+		let pattern = Piece.patterns[index]
+		this.createGrid(pattern)
+		// Configure width and height
+		this.width = config.blockWidth * pattern.length
+		this.height = config.blockWidth * pattern[0].length
 	}
-
+	
+	static patterns = [
+		[
+			[0, 1, 0],
+			[1, 1, 1]
+		]
+	]
+	
 	createGrid(pattern) {
 		for(let y in pattern) {
 			this.blocks[y] = []
@@ -237,6 +252,7 @@ class Piece {
 		// previous grid space
 		let shadowX = pieceX - remainingX;
 		let shadowY = pieceY - remainingY;
+		console.log(pieceX)
 		// Check if the piece is actually
 		// closer to the next grid space
 		let halfBlock = config.blockWidth / 2;
@@ -341,6 +357,8 @@ class Piece {
 	}
 	update() {
 		if (this.isBeingDragged) {
+			this.x = touch.x + touch.dragOffsetX
+			this.x = touch.y + touch.dragOffsetY
 			this.updateBlocksPosition();
 			this.updateShadowPosition();
 		}
@@ -475,7 +493,7 @@ canvas.addEventListener("touchmove", function (ev) {
 
 	let touchX = touchEv.clientX - rect.left;
 	let touchY = touchEv.clientY - rect.top;
-
+	
 	touch.x = touchX;
 	touch.y = touchY;
 });
@@ -506,7 +524,7 @@ function showNewPiece() {
 	// Try to find an empty space in the blocks tray
 	for (let space of spaces) {
 		if (space.content) continue;
-
+/*
 		// Select a random piece type
 		let pieceTypes = [Piece_0,
 			Piece_1,
@@ -514,15 +532,17 @@ function showNewPiece() {
 			Piece_3];
 		let index = Math.floor(Math.random() * pieceTypes.length);
 		let piece = pieceTypes[index];
-
+*/
 		// Config the piece
-		piece = new piece();
+		let piece = new Piece();
 		piece.x = space.x;
 		piece.y = space.y;
 		piece.updateBlocksPosition();
+		console.log(piece.x)
 
 		space.content = piece;
 		screen.put(piece, 0);
+		break;
 	}
 }
 function checkBoardColumns() {
@@ -549,7 +569,6 @@ function update() {
 	requestAnimationFrame(update);
 
 	touch.update();
-
 	// Update each object on screen
 	for (let frame of screen) {
 		for (let item of frame) {
