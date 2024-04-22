@@ -191,14 +191,22 @@ class Piece {
 		let pattern = Piece.patterns[index]
 		this.createGrid(pattern)
 		// Configure width and height
-		this.width = config.blockWidth * pattern.length
-		this.height = config.blockWidth * pattern[0].length
+		this.width = config.blockWidth * pattern[0].length
+		this.height = config.blockWidth * pattern.length
 	}
 	
 	static patterns = [
 		[
 			[0, 1, 0],
 			[1, 1, 1]
+		],[
+			[1, 0],
+			[1, 1],
+			[0, 1]
+		],[
+			[1, 1, 1],
+			[1, 0, 0],
+			[1, 0, 0]
 		]
 	]
 	
@@ -252,7 +260,6 @@ class Piece {
 		// previous grid space
 		let shadowX = pieceX - remainingX;
 		let shadowY = pieceY - remainingY;
-		console.log(pieceX)
 		// Check if the piece is actually
 		// closer to the next grid space
 		let halfBlock = config.blockWidth / 2;
@@ -357,8 +364,10 @@ class Piece {
 	}
 	update() {
 		if (this.isBeingDragged) {
+			/*
 			this.x = touch.x + touch.dragOffsetX
 			this.x = touch.y + touch.dragOffsetY
+			*/
 			this.updateBlocksPosition();
 			this.updateShadowPosition();
 		}
@@ -468,19 +477,17 @@ canvas.addEventListener("touchstart", function (ev) {
 	touch.touching = true;
 
 	// Check if pick something
-	for (let i = 0; i < screen.length; i++) {
-		let frame = screen[i];
-		for (let ii = 0; ii < frame.length; ii++) {
-			let piece = frame[ii];
+	for (let frame of screen) {
+		for (let item of frame) {
 
-			if (piece.isPointInside(touchX, touchY)) {
-				touch.draging = piece;
+			if (item.isPointInside(touchX, touchY)) {
+				touch.draging = item;
 				touch.draging.isBeingDragged = true;
 				touch.isDraging = true;
 
 				let margin = config.blockWidth;
-				touch.dragOffsetX = -(piece.width / 2);
-				touch.dragOffsetY = -piece.height - margin;
+				touch.dragOffsetX = -(item.width / 2);
+				touch.dragOffsetY = - item.height - margin;
 			}
 		}
 	}
@@ -569,6 +576,7 @@ function update() {
 	requestAnimationFrame(update);
 
 	touch.update();
+	
 	// Update each object on screen
 	for (let frame of screen) {
 		for (let item of frame) {
