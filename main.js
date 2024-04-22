@@ -330,16 +330,6 @@ class Piece {
 		}
 		return false;
 
-		/*
-        let top = this.y;
-        let right = this.x + this.width;
-        let bottom = this.y + this.width;
-        let left = this.x;
-
-        if (left < x && x < right) if (top < y && y < bottom) return true;
-
-        return false;
-        */
 	}
 	placeOnBoard() {
 		// Align this piece and its blocks on the board grid
@@ -369,23 +359,9 @@ class Piece {
 	}
 	update() {
 		if (this.isBeingDragged) {
-			/*
-			this.x = touch.x + touch.dragOffsetX
-			this.x = touch.y + touch.dragOffsetY
-			*/
 			this.updateBlocksPosition();
 			this.updateShadowPosition();
 		}
-		/*
-      let relX = this.x - board.x
-      let relY = this.y - board.y
-      let remainingX = relX % config.blockWidth
-      let remainingY = relY % config.blockWidth
-      let x = relX - remainingX
-      let y = relY - remainingY
-      this.shadow.x = x
-      this.shadow.y = y
-      */
 	}
 	draw(ctx) {
 		// Draw shadow
@@ -401,70 +377,6 @@ class Piece {
 			for(let item of row)
 				if (item)
 					item.draw(ctx);
-	}
-}
-class Piece_0 extends Piece {
-	constructor() {
-		super();
-		this.width = config.blockWidth * 2;
-		this.height = config.blockWidth * 2;
-		
-		// Pick a random block img
-		let img = blockImgs[Math.floor(Math.random() * blockImgs.length)];
-		
-		let pattern = [
-			[1, 1],
-			[1, 1]
-		]
-		this.createGrid(pattern)
-	}
-
-}
-class Piece_1 extends Piece {
-	constructor() {
-		super();
-		this.width = config.blockWidth * 3;
-		this.height = config.blockWidth * 3;
-		
-		// Pick a random block img
-		let img = blockImgs[Math.floor(Math.random() * blockImgs.length)];
-		
-		let pattern = [
-			[0, 0, 1],
-			[0, 0, 1],
-			[1, 1, 1]]
-		this.createGrid(pattern)
-	}
-}
-class Piece_2 extends Piece {
-	constructor() {
-		super();
-		this.width = config.blockWidth * 3;
-		this.height = config.blockWidth * 2;
-
-		// Pick a random block img
-		let img = blockImgs[Math.floor(Math.random() * blockImgs.length)];
-		
-		let pattern = [
-			[0, 1, 0],
-			[1, 1, 1]]
-		this.createGrid(pattern)
-	}
-}
-class Piece_3 extends Piece {
-	constructor() {
-		super();
-		this.width = config.blockWidth * 2;
-		this.height = config.blockWidth * 3;
-
-		// Pick a random block img
-		let img = blockImgs[Math.floor(Math.random() * blockImgs.length)];
-		let pattern = [
-			[1, 0],
-			[1, 1],
-			[0, 1]]
-			
-		this.createGrid(pattern)
 	}
 }
 
@@ -536,15 +448,6 @@ function showNewPiece() {
 	// Try to find an empty space in the blocks tray
 	for (let space of spaces) {
 		if (space.content) continue;
-/*
-		// Select a random piece type
-		let pieceTypes = [Piece_0,
-			Piece_1,
-			Piece_2,
-			Piece_3];
-		let index = Math.floor(Math.random() * pieceTypes.length);
-		let piece = pieceTypes[index];
-*/
 		// Config the piece
 		let piece = new Piece();
 		piece.x = space.x;
