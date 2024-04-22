@@ -136,6 +136,7 @@ window.onload = () => {
 	
 	//initGame()
 	showNewPiece();
+	showNewPiece();
 	update();
 };
 
@@ -454,7 +455,6 @@ function showNewPiece() {
 		piece.x = space.x;
 		piece.y = space.y;
 		piece.updateBlocksPosition();
-		console.log(piece.x)
 
 		space.content = piece;
 		screen.put(piece, 0);
@@ -483,14 +483,22 @@ function checkBoardRows() {
 		let rowHaveEmptyParts = false
 		
 		for(let column = 0; column < config.boardColumnLength; column++) {
-			console.log(column, row)
 			if(board.grid[column][row]) continue
 			else rowHaveEmptyParts = true 
 			
 			break
 		}
 		
-		if(!rowHaveEmptyParts) bg = "black"
+		if(!rowHaveEmptyParts) {
+			bg = "red"
+			clearBoardRow(row)
+		}
+	}
+}
+function clearBoardRow(row) {
+	for(let column = 0; column < config.boardColumnLength; column++) {
+		pool.put(board.grid[column][row], "blocks")
+		board.grid[column][row] = null
 	}
 }
 
