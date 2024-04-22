@@ -146,25 +146,6 @@ for (let i = 0; i < 5; i++) {
 	blockImgs.push(img);
 }
 
-function createGrid(width, height) {
-	let grid = [];
-	for (let x = 0; x < width; x++) {
-		grid[x] = [];
-		for (let y = 0; y < height; y++) {
-			grid[x][y] = null;
-		}
-	}
-
-	return grid;
-}
-function iterateGrid(grid, func) {
-	for (let x = 0; x < grid.length; x++) {
-		for (let y = 0; y < grid[x].length; y++) {
-			func(grid[x][y], x, y, grid);
-		}
-	}
-}
-
 class Block {
 	constructor() {
 		this.x = null;
@@ -376,17 +357,18 @@ class Piece {
 	}
 	draw(ctx) {
 		// Draw shadow
-		if (this.isShadowVisible) {
-			iterateGrid(this.shadow, shadowBlock => {
-				if (shadowBlock) shadowBlock.draw(ctx);
-			});
-		}
+		if (this.isShadowVisible) 
+			for(let row of this.shadow) 
+				for(let item of row) 
+					if (item)
+						item.draw(ctx);
+			
 
 		// Draw the actual blocks
-		iterateGrid(this.blocks,
-			function (block) {
-				if (block) block.draw(ctx);
-			});
+		for(let row of this.blocks)
+			for(let item of row)
+				if (item)
+					item.draw(ctx);
 	}
 }
 class Piece_0 extends Piece {
