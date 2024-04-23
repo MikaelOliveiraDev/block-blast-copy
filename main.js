@@ -133,7 +133,7 @@ window.onload = () => {
 
 	board.init();
 	blocksTray.init();
-	
+
 	//initGame()
 	showNewPiece();
 	showNewPiece();
@@ -186,16 +186,21 @@ class Piece {
 		this.isBeingDragged = false;
 		this.isShadowVisible = false;
 		this.zIndex = 0;
-		
-		// Select a random pattern and create grid 
+
+		// Select a random pattern
 		let index = Math.floor(Math.random() * Piece.patterns.length)
 		let pattern = Piece.patterns[index]
+		// Rotate some times
+		let rotations = Math.floor(Math.random() * 4)
+		for(let i = 0; i < rotations; i++)
+			pattern = Piece.rotatePattern(pattern)
+		
 		this.createGrid(pattern)
 		// Configure width and height
 		this.width = config.blockWidth * pattern[0].length
 		this.height = config.blockWidth * pattern.length
 	}
-	
+
 	static patterns = [
 		[
 			[0, 1, 0],
@@ -204,6 +209,13 @@ class Piece {
 			[1, 0],
 			[1, 1],
 			[0, 1]
+		],[
+			[0, 1],
+			[1, 1],
+			[1, 0]
+		],[
+			[1, 1, 1],
+			[1, 0, 0]
 		],[
 			[1, 0, 0],
 			[1, 0, 0],
@@ -216,18 +228,43 @@ class Piece {
 		]
 	]
 	
+	static rotatePattern(pattern) {
+			
+			// Get the number of rows and columns at pattern
+			const rows = pattern.length;
+			const cols = pattern[0].length;
+
+			const rotatedPattern = [];
+			
+			// Determine the dimensions of the rotated pattern based on the original pattern
+			const newRows = cols
+			const newCols = rows
+
+			// Loop through each row of the rotated pattern
+			for (let r = 0; r < newRows; r++) {
+				rotatedPattern.push([]);
+
+				// Loop through each column of the rotatedPattern
+				for (let c = 0; c < newCols; c++) {
+					// Handle cases based on the original pattern dimensions
+					rotatedPattern[r].push(pattern[rows - 1 - c][r]);
+				}
+			}
+			return rotatedPattern;
+		}
+
 	createGrid(pattern) {
-		for(let y in pattern) {
+		for (let y in pattern) {
 			this.blocks[y] = []
 			this.shadow[y] = []
-			for(let x in pattern[y]) {
-			//console.log(pattern.length, pattern[y].length)
-			//console.log(y, x, pattern)
-				if(pattern[y][x] === 1) {
+			for (let x in pattern[y]) {
+				//console.log(pattern.length, pattern[y].length)
+				//console.log(y, x, pattern)
+				if (pattern[y][x] === 1) {
 					this.blocks[y][x] = pool.get("block")
 					this.blocks[y][x].img = blockImgs[1]
 					this.blocks[y][x].globalAlpha = 1
-					
+
 					this.shadow[y][x] = pool.get("block")
 					this.shadow[y][x].img = blockImgs[1]
 					this.shadow[y][x].globalAlpha = .5
@@ -239,11 +276,11 @@ class Piece {
 		}
 	}
 	updateBlocksPosition() {
-		for(let y in this.blocks) {
-			for(let x in this.blocks[y]) {
+		for (let y in this.blocks) {
+			for (let x in this.blocks[y]) {
 				let block = this.blocks[y][x]
-				if(block === null) continue
-				
+				if (block === null) continue
+
 				let blockOffsetX = x * config.blockWidth
 				let blockOffsetY = y * config.blockWidth
 				block.x = this.x + blockOffsetX
@@ -289,26 +326,26 @@ class Piece {
 		this.shadowIndexY = (shadowY - board.y) / config.blockWidth;
 
 		let isSpaceFree = true;
-		for(let y in this.shadow) {
-			for(let x in this.shadow[y]) {
+		for (let y in this.shadow) {
+			for (let x in this.shadow[y]) {
 				if (!isSpaceFree) continue
-				
+
 				x = Number(x)
 				y = Number(y)
-				
-				if (this.shadow[y][x]) {
-				// Check if space on board is free
-				let indexX = this.shadowIndexX + x;
-				let indexY = this.shadowIndexY + y;
-				if (board.grid[indexX][indexY] != null)
-					isSpaceFree = false;
-				
-				let blockOffsetX = x * config.blockWidth;
-				let blockOffsetY = y * config.blockWidth;
 
-				this.shadow[y][x].x = shadowX + blockOffsetX;
-				this.shadow[y][x].y = shadowY + blockOffsetY;
-			}
+				if (this.shadow[y][x]) {
+					// Check if space on board is free
+					let indexX = this.shadowIndexX + x;
+					let indexY = this.shadowIndexY + y;
+					if (board.grid[indexX][indexY] != null)
+						isSpaceFree = false;
+
+					let blockOffsetX = x * config.blockWidth;
+					let blockOffsetY = y * config.blockWidth;
+
+					this.shadow[y][x].x = shadowX + blockOffsetX;
+					this.shadow[y][x].y = shadowY + blockOffsetY;
+				}
 			}
 		}
 
@@ -339,9 +376,9 @@ class Piece {
 		this.updateBlocksPosition();
 
 		// Put each block of piece in the board
-		for(let y in this.blocks) {
-			for(let x in this.blocks[y]) {
-				if(this.blocks[y][x]) {
+		for (let y in this.blocks) {
+			for (let x in this.blocks[y]) {
+				if (this.blocks[y][x]) {
 					let indexX = this.shadowIndexX + Number(x)
 					let indexY = this.shadowIndexY + Number(y)
 					board.grid[indexX][indexY] = this.blocks[y][x]
@@ -366,18 +403,18 @@ class Piece {
 	}
 	draw(ctx) {
 		// Draw shadow
-		if (this.isShadowVisible) 
-			for(let row of this.shadow) 
-				for(let item of row) 
-					if (item)
-						item.draw(ctx);
-			
+		if (this.isShadowVisible)
+			for (let row of this.shadow)
+			for (let item of row)
+			if (item)
+			item.draw(ctx);
+
 
 		// Draw the actual blocks
-		for(let row of this.blocks)
-			for(let item of row)
-				if (item)
-					item.draw(ctx);
+		for (let row of this.blocks)
+			for (let item of row)
+			if (item)
+			item.draw(ctx);
 	}
 }
 
@@ -418,7 +455,7 @@ canvas.addEventListener("touchmove", function (ev) {
 
 	let touchX = touchEv.clientX - rect.left;
 	let touchY = touchEv.clientY - rect.top;
-	
+
 	touch.x = touchX;
 	touch.y = touchY;
 });
@@ -469,35 +506,35 @@ function checkBoardColumns() {
 		for (let row in board.grid[column]) {
 			if (board.grid[column][row]) continue
 			else columnHaveEmptyParts = true
-			
-				break
+
+			break
 		}
 
 		if (!columnHaveEmptyParts) clearBoardColumn(column)
 	}
 }
 function checkBoardRows() {
-	for(let row = 0; row < config.boardColumnLength; row++) {
+	for (let row = 0; row < config.boardColumnLength; row++) {
 		let rowHaveEmptyParts = false
-		
-		for(let column = 0; column < config.boardColumnLength; column++) {
-			if(board.grid[column][row]) continue
-			else rowHaveEmptyParts = true 
-			
+
+		for (let column = 0; column < config.boardColumnLength; column++) {
+			if (board.grid[column][row]) continue
+			else rowHaveEmptyParts = true
+
 			break
 		}
-		
-		if(!rowHaveEmptyParts) clearBoardRow(row)
+
+		if (!rowHaveEmptyParts) clearBoardRow(row)
 	}
 }
 function clearBoardColumn(column) {
-	for(let row = 0; row < config.boardRowLength; row++) {
+	for (let row = 0; row < config.boardRowLength; row++) {
 		pool.put(board.grid[column][row], "blocks")
 		board.grid[column][row] = null
 	}
 }
 function clearBoardRow(row) {
-	for(let column = 0; column < config.boardColumnLength; column++) {
+	for (let column = 0; column < config.boardColumnLength; column++) {
 		pool.put(board.grid[column][row], "blocks")
 		board.grid[column][row] = null
 	}
@@ -507,7 +544,7 @@ function update() {
 	requestAnimationFrame(update);
 
 	touch.update();
-	
+
 	// Update each object on screen
 	for (let frame of screen) {
 		for (let item of frame) {
