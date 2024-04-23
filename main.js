@@ -69,9 +69,11 @@ const blocksTray = {
 		}],
 	spaceWidth: null,
 	spaceHeight: null,
+	spaceRows: 4,
+	spaceCols: 4,
 	init: function () {
-		this.spaceWidth = config.blockWidth * 5;
-		this.spaceHeight = config.blockWidth * 5;
+		this.spaceWidth = config.blockWidth * this.spaceRows
+		this.spaceHeight = config.blockWidth * this.spaceCols
 		let spaceBetween = 5;
 		let marginTop = 20;
 		let middleX = canvas.width / 2;
@@ -82,8 +84,16 @@ const blocksTray = {
 		this.spaces[1].x = middleX + spaceBetween;
 		this.spaces[1].y = board.y + board.height + marginTop;
 	},
+	centralizeContent: function(space) {
+		let content = space.content
+		let marginTop = (this.spaceHeight - content.height) / 2
+		let marginLeft = (this.spaceWidth - content.width) / 2
+		
+		content.x = space.x + marginLeft
+		content.y = space.y + marginTop
+	},
 	draw: function (ctx) {
-		ctx.fillStyle = "#9e9e9e6e";
+		ctx.fillStyle = "#9e9e9e39";
 		ctx.fillRect(
 			this.spaces[0].x,
 			this.spaces[0].y,
@@ -487,17 +497,18 @@ function showNewPiece() {
 	// Try to find an empty space in the blocks tray
 	for (let space of spaces) {
 		if (space.content) continue;
+		
 		// Config the piece
 		let piece = new Piece();
-		piece.x = space.x;
-		piece.y = space.y;
+		space.content = piece;
+		blocksTray.centralizeContent(space)
 		piece.updateBlocksPosition();
 
-		space.content = piece;
 		screen.put(piece, 0);
 		break;
 	}
 }
+
 function checkBoardColumns() {
 	// Check if some columns are filled
 	for (let column in board.grid) {
