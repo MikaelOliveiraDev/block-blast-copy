@@ -443,7 +443,7 @@ canvas.addEventListener("touchend", function (ev) {
 		touch.draging = null;
 	}
 });
-var bg = "#66518c"
+
 function showNewPiece() {
 	let spaces = blocksTray.spaces;
 
@@ -473,9 +473,7 @@ function checkBoardColumns() {
 				break
 		}
 
-		if (!columnHaveEmptyParts) {
-			bg = "black"
-		}
+		if (!columnHaveEmptyParts) clearBoardColumn(column)
 	}
 }
 function checkBoardRows() {
@@ -489,10 +487,13 @@ function checkBoardRows() {
 			break
 		}
 		
-		if(!rowHaveEmptyParts) {
-			bg = "red"
-			clearBoardRow(row)
-		}
+		if(!rowHaveEmptyParts) clearBoardRow(row)
+	}
+}
+function clearBoardColumn(column) {
+	for(let row = 0; row < config.boardRowLength; row++) {
+		pool.put(board.grid[column][row], "blocks")
+		board.grid[column][row] = null
 	}
 }
 function clearBoardRow(row) {
@@ -520,7 +521,7 @@ function render() {
 	let ctx = canvas.getContext("2d");
 
 	// Paint the hole canvas
-	ctx.fillStyle = bg || "#66518c";
+	ctx.fillStyle = "#66518c";
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 	// Draw board spaces or items
