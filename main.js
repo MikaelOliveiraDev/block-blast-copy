@@ -45,12 +45,11 @@ const touch = {
 	y: null,
 	touching: false,
 	touchingCount: 0,
-	isDraging: false,
 	draging: null,
 	dragOffsetX: 0,
 	dragOffsetY: 0,
 	update: function () {
-		if (this.isDraging) {
+		if (this.draging) {
 			this.draging.x = this.x + this.dragOffsetX;
 			this.draging.y = this.y + this.dragOffsetY;
 		}
@@ -91,6 +90,21 @@ const blocksTray = {
 		
 		content.x = space.x + marginLeft
 		content.y = space.y + marginTop
+	},
+	isPointInside: function(x, y) {
+		/* If point is inside a space, return that space
+		   otherwise, return false */
+		for(let space of this.spaces) {
+			let spcX = space.x 
+			let spcX1 = space.x + this.spaceWidth
+			let spcY = space.y 
+			let spcY1 = space.y + this.spaceHeight
+			if(spcX < x && x < spcX1 && spcY < y && y < spcY1) {
+				return space
+			}
+		}
+		
+		return false
 	},
 	draw: function (ctx) {
 		ctx.fillStyle = "#9e9e9e39";
@@ -443,20 +457,27 @@ canvas.addEventListener("touchstart", function (ev) {
 	touch.y = touchY;
 	touch.touching = true;
 
-	// Check if pick something
+	// Check if pick something on screen objs
 	for (let frame of screen) {
 		for (let item of frame) {
-
 			if (item.isPointInside(touchX, touchY)) {
 				touch.draging = item;
 				touch.draging.isBeingDragged = true;
-				touch.isDraging = true;
 
 				let margin = config.blockWidth;
 				touch.dragOffsetX = -(item.width / 2);
 				touch.dragOffsetY = - item.height - margin;
 			}
 		}
+	}
+	
+	// Check if clicked on tray 
+	let space = blocksTray.isPointInside(touchX, touchY)
+	if(space && space.content) {
+		touch.draging = space.content
+		touch.draging.isBeingDragged = true
+		touch.dragOffsetX = -(space.content.width / 2);
+		touch.dragOffsetY = - space.content.height - config.blockWidth;
 	}
 });
 canvas.addEventListener("touchmove", function (ev) {
@@ -476,7 +497,6 @@ canvas.addEventListener("touchend", function (ev) {
 	touch.y = null;
 	touch.touching = false;
 	touch.touchingCount = 0;
-	touch.isDraging = false;
 
 	if (touch.draging) {
 		let piece = touch.draging;
