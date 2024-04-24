@@ -204,8 +204,10 @@ class Piece {
 		let rotations = Math.floor(Math.random() * 4)
 		for(let i = 0; i < rotations; i++)
 			pattern = Piece.rotatePattern(pattern)
+		// Select an image 
+		let img = blockImgs[Math.floor(Math.random() * blockImgs.length)]
 		
-		this.createGrid(pattern)
+		this.createGrid(pattern, img)
 		// Configure width and height
 		this.width = config.blockWidth * pattern[0].length
 		this.height = config.blockWidth * pattern.length
@@ -263,7 +265,7 @@ class Piece {
 			return rotatedPattern;
 		}
 
-	createGrid(pattern) {
+	createGrid(pattern, img) {
 		for (let y in pattern) {
 			this.blocks[y] = []
 			this.shadow[y] = []
@@ -272,11 +274,11 @@ class Piece {
 				//console.log(y, x, pattern)
 				if (pattern[y][x] === 1) {
 					this.blocks[y][x] = pool.get("block")
-					this.blocks[y][x].img = blockImgs[1]
+					this.blocks[y][x].img = img
 					this.blocks[y][x].globalAlpha = 1
 
 					this.shadow[y][x] = pool.get("block")
-					this.shadow[y][x].img = blockImgs[1]
+					this.shadow[y][x].img = img
 					this.shadow[y][x].globalAlpha = .5
 				} else {
 					this.blocks[y][x] = null;
@@ -569,7 +571,7 @@ function render() {
 	let ctx = canvas.getContext("2d");
 
 	// Paint the hole canvas
-	ctx.fillStyle = "#66518c";
+	ctx.fillStyle = "#4f6875";
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 	// Draw board spaces or items
