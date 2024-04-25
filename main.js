@@ -53,6 +53,19 @@ const touch = {
 			this.draging.x = this.x + this.dragOffsetX;
 			this.draging.y = this.y + this.dragOffsetY;
 		}
+	},
+	drag: function(item) {
+		touch.draging = item;
+		touch.draging.isBeingDragged = true;
+
+		if (item instanceof Piece) {
+			touch.dragOffsetX = -(item.width / 2);
+			touch.dragOffsetY = - item.height - config.blockWidth;
+		}
+	},
+	drop: function() {
+		touch.draging.isBeingDragged = false;
+		touch.draging = null;
 	}
 };
 const blocksTray = {
@@ -87,23 +100,23 @@ const blocksTray = {
 		let content = space.content
 		let marginTop = (this.spaceHeight - content.height) / 2
 		let marginLeft = (this.spaceWidth - content.width) / 2
-		
+
 		content.x = space.x + marginLeft
 		content.y = space.y + marginTop
 	},
 	isPointInside: function(x, y) {
 		/* If point is inside a space, return that space
 		   otherwise, return false */
-		for(let space of this.spaces) {
-			let spcX = space.x 
+		for (let space of this.spaces) {
+			let spcX = space.x
 			let spcX1 = space.x + this.spaceWidth
-			let spcY = space.y 
+			let spcY = space.y
 			let spcY1 = space.y + this.spaceHeight
-			if(spcX < x && x < spcX1 && spcY < y && y < spcY1) {
+			if (spcX < x && x < spcX1 && spcY < y && y < spcY1) {
 				return space
 			}
 		}
-		
+
 		return false
 	},
 	draw: function (ctx) {
@@ -216,17 +229,17 @@ class Piece {
 		let pattern = Piece.patterns[index]
 		// Rotate some times
 		let rotations = Math.floor(Math.random() * 4)
-		for(let i = 0; i < rotations; i++)
+		for (let i = 0; i < rotations; i++)
 			pattern = Piece.rotatePattern(pattern)
-		// Select an image 
+		// Select an image
 		let img = blockImgs[Math.floor(Math.random() * blockImgs.length)]
-		
+
 		this.createGrid(pattern, img)
 		// Configure width and height
 		this.width = config.blockWidth * pattern[0].length
 		this.height = config.blockWidth * pattern.length
 	}
-
+	
 	static patterns = [
 		[
 			[0, 1, 0],
@@ -255,29 +268,29 @@ class Piece {
 	]
 	
 	static rotatePattern(pattern) {
-			
-			// Get the number of rows and columns at pattern
-			const rows = pattern.length;
-			const cols = pattern[0].length;
 
-			const rotatedPattern = [];
-			
-			// Determine the dimensions of the rotated pattern based on the original pattern
-			const newRows = cols
-			const newCols = rows
+		// Get the number of rows and columns at pattern
+		const rows = pattern.length;
+		const cols = pattern[0].length;
 
-			// Loop through each row of the rotated pattern
-			for (let r = 0; r < newRows; r++) {
-				rotatedPattern.push([]);
+		const rotatedPattern = [];
 
-				// Loop through each column of the rotatedPattern
-				for (let c = 0; c < newCols; c++) {
-					// Handle cases based on the original pattern dimensions
-					rotatedPattern[r].push(pattern[rows - 1 - c][r]);
-				}
+		// Determine the dimensions of the rotated pattern based on the original pattern
+		const newRows = cols
+		const newCols = rows
+
+		// Loop through each row of the rotated pattern
+		for (let r = 0; r < newRows; r++) {
+			rotatedPattern.push([]);
+
+			// Loop through each column of the rotatedPattern
+			for (let c = 0; c < newCols; c++) {
+				// Handle cases based on the original pattern dimensions
+				rotatedPattern[r].push(pattern[rows - 1 - c][r]);
 			}
-			return rotatedPattern;
 		}
+		return rotatedPattern;
+	}
 
 	createGrid(pattern, img) {
 		for (let y in pattern) {
@@ -458,27 +471,15 @@ canvas.addEventListener("touchstart", function (ev) {
 	touch.touching = true;
 
 	// Check if pick something on screen objs
-	for (let frame of screen) {
-		for (let item of frame) {
-			if (item.isPointInside(touchX, touchY)) {
-				touch.draging = item;
-				touch.draging.isBeingDragged = true;
+	for (let frame of screen)
+		for (let item of frame)
+		if (item.isPointInside(touchX, touchY))
+		touch.drag(item)
 
-				let margin = config.blockWidth;
-				touch.dragOffsetX = -(item.width / 2);
-				touch.dragOffsetY = - item.height - margin;
-			}
-		}
-	}
-	
-	// Check if clicked on tray 
+	// Check if clicked on tray
 	let space = blocksTray.isPointInside(touchX, touchY)
-	if(space && space.content) {
-		touch.draging = space.content
-		touch.draging.isBeingDragged = true
-		touch.dragOffsetX = -(space.content.width / 2);
-		touch.dragOffsetY = - space.content.height - config.blockWidth;
-	}
+	if (space && space.content)
+		touch.drag(space.content)
 });
 canvas.addEventListener("touchmove", function (ev) {
 	ev.preventDefault();
@@ -508,8 +509,7 @@ canvas.addEventListener("touchend", function (ev) {
 			checkBoardRows()
 		}
 
-		piece.isBeingDragged = false;
-		touch.draging = null;
+		touch.drop()
 	}
 });
 
@@ -519,7 +519,7 @@ function showNewPiece() {
 	// Try to find an empty space in the blocks tray
 	for (let space of spaces) {
 		if (space.content) continue;
-		
+
 		// Config the piece
 		let piece = new Piece();
 		space.content = piece;
