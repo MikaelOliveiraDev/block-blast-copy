@@ -212,6 +212,7 @@ class Block {
 		return false;
 	}
 }
+
 class Piece {
 	constructor() {
 		this.x = null;
@@ -349,18 +350,15 @@ class Piece {
 		if (remainingY > halfBlock) shadowY += config.blockWidth;
 
 		// Prevent the shadow the be shown outside of the board
-		if (
-			shadowX < board.x ||
-			shadowX > board.width - this.width + config.blockWidth ||
-			shadowY < board.y ||
-			shadowY > board.height - this.height + config.blockWidth
-		) {
-			this.isShadowVisible = false;
-			return;
-		} else {
-			this.isShadowVisible = true;
-		}
-
+		let isToTheLeft = shadowX < board.x
+		let isToTheRight = shadowX > board.x + board.width - this.width
+		let isOverTheTop = shadowY < board.y
+		let isUnderTheBottom = shadowY > board.y + board.height - this.height
+		if (isToTheLeft || isToTheRight || isOverTheTop || isUnderTheBottom)
+			return this.isShadowVisible = false;
+		
+		this.isShadowVisible = true;
+		
 		this.shadowIndexX = (shadowX - board.x) / config.blockWidth;
 		this.shadowIndexY = (shadowY - board.y) / config.blockWidth;
 
@@ -444,16 +442,29 @@ class Piece {
 		// Draw shadow
 		if (this.isShadowVisible)
 			for (let row of this.shadow)
-			for (let item of row)
-			if (item)
-			item.draw(ctx);
+				for (let item of row)
+					if (item)
+						item.draw(ctx);
 
 
 		// Draw the actual blocks
 		for (let row of this.blocks)
 			for (let item of row)
-			if (item)
-			item.draw(ctx);
+				if (item)
+					item.draw(ctx);
+	
+	/* The code below is just for demonstration*/
+	ctx.beginPath()
+	ctx.moveTo(board.x, board.y)
+	ctx.lineTo(board.x + board.width - this.width , board.y)
+	ctx.lineTo(board.x + board.width - this.width, board.y + board.height - this.height)
+	ctx.lineTo(board.x, board.y + board.height - this.height)
+	ctx.lineTo(board.x, board.y)
+	
+	ctx.strokeStyle = "red"
+	ctx.stroke()
+	ctx.closePath()
+	/* The code above must be deleted */
 	}
 }
 
@@ -611,4 +622,5 @@ function render() {
 			if (item.draw) item.draw(ctx);
 		}
 	}
+	
 }
