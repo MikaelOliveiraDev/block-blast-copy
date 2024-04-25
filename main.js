@@ -9,7 +9,7 @@ const config = {
 const board = {
 	grid: [],
 	x: 10,
-	y: 10,
+	y: 100,
 	width: null,
 	height: null,
 	init: function () {
@@ -139,6 +139,24 @@ const screen = [];
 const pool = {
 	blocks: []
 };
+const score = {
+	value: 0,
+	x: null,
+	y: null,
+	init: function() {
+		this.x = board.x + (board.width / 2)
+		this.y = board.y / 2
+		this.y = this.y > 16 ? this.y : 16
+	},
+	draw: function(ctx) {
+		ctx.globalAlpha = 1
+		ctx.fillStyle = "#ffffff"
+		ctx.font = "50px sans-serif"
+		ctx.textAlign = "center"
+		ctx.textBaseline = "middle"
+		ctx.fillText(this.value, this.x, this.y)
+	}
+}
 
 screen.put = function (item, zIndex) {
 	let frame = screen[zIndex];
@@ -170,6 +188,7 @@ window.onload = () => {
 
 	board.init();
 	blocksTray.init();
+	score.init()
 
 	//initGame()
 	showNewPiece();
@@ -256,6 +275,9 @@ class Piece {
 		],[
 			[1, 1, 1],
 			[1, 0, 0]
+		],[
+			[1, 0, 0],
+			[1, 1, 1]
 		],[
 			[1, 0, 0],
 			[1, 0, 0],
@@ -452,19 +474,6 @@ class Piece {
 			for (let item of row)
 				if (item)
 					item.draw(ctx);
-	
-	/* The code below is just for demonstration*/
-	ctx.beginPath()
-	ctx.moveTo(board.x, board.y)
-	ctx.lineTo(board.x + board.width - this.width , board.y)
-	ctx.lineTo(board.x + board.width - this.width, board.y + board.height - this.height)
-	ctx.lineTo(board.x, board.y + board.height - this.height)
-	ctx.lineTo(board.x, board.y)
-	
-	ctx.strokeStyle = "red"
-	ctx.stroke()
-	ctx.closePath()
-	/* The code above must be deleted */
 	}
 }
 
@@ -575,12 +584,14 @@ function clearBoardColumn(column) {
 	for (let row = 0; row < config.boardRowLength; row++) {
 		pool.put(board.grid[column][row], "blocks")
 		board.grid[column][row] = null
+		score.value++
 	}
 }
 function clearBoardRow(row) {
 	for (let column = 0; column < config.boardColumnLength; column++) {
 		pool.put(board.grid[column][row], "blocks")
 		board.grid[column][row] = null
+		score.value++
 	}
 }
 
@@ -617,10 +628,10 @@ function render() {
 
 	blocksTray.draw(ctx);
 
-	for (let frame of screen) {
-		for (let item of frame) {
+	for (let frame of screen)
+		for (let item of frame)
 			if (item.draw) item.draw(ctx);
-		}
-	}
+	
+	score.draw(ctx)
 	
 }
