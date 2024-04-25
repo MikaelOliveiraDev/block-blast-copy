@@ -140,7 +140,8 @@ const pool = {
 	blocks: []
 };
 const score = {
-	value: 0,
+	current: 0,
+	target: 0,
 	x: null,
 	y: null,
 	init: function() {
@@ -148,13 +149,20 @@ const score = {
 		this.y = board.y / 2
 		this.y = this.y > 16 ? this.y : 16
 	},
+	update: function() {
+		// Score change animation
+		if(this.current < this.target)
+			this.current++
+		else if(this.current > this.target)
+			this.current--
+	},
 	draw: function(ctx) {
 		ctx.globalAlpha = 1
 		ctx.fillStyle = "#ffffff"
 		ctx.font = "50px sans-serif"
 		ctx.textAlign = "center"
 		ctx.textBaseline = "middle"
-		ctx.fillText(this.value, this.x, this.y)
+		ctx.fillText(this.current, this.x, this.y)
 	}
 }
 
@@ -581,24 +589,29 @@ function checkBoardRows() {
 	}
 }
 function clearBoardColumn(column) {
+	let targetScore = 0
 	for (let row = 0; row < config.boardRowLength; row++) {
 		pool.put(board.grid[column][row], "blocks")
 		board.grid[column][row] = null
-		score.value++
+		targetScore++
 	}
+	score.target += targetScore
 }
 function clearBoardRow(row) {
+	let targetScore = 0
 	for (let column = 0; column < config.boardColumnLength; column++) {
 		pool.put(board.grid[column][row], "blocks")
 		board.grid[column][row] = null
-		score.value++
+		targetScore++
 	}
+	score.target += targetScore
 }
 
 function update() {
 	requestAnimationFrame(update);
 
 	touch.update();
+	score.update()
 
 	// Update each object on screen
 	for (let frame of screen) {
