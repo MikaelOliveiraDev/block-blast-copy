@@ -64,6 +64,8 @@ const touch = {
 		}
 	},
 	drop: function() {
+		if(touch.draging.onDrop)
+			touch.draging.onDrop()
 		touch.draging.isBeingDragged = false;
 		touch.draging = null;
 	}
@@ -96,13 +98,20 @@ const blocksTray = {
 		this.spaces[1].x = middleX + spaceBetween;
 		this.spaces[1].y = board.y + board.height + marginTop;
 	},
-	centralizeContent: function(space) {
+	contentPositionAsInCenter: function(space) {
 		let content = space.content
 		let marginTop = (this.spaceHeight - content.height) / 2
 		let marginLeft = (this.spaceWidth - content.width) / 2
 
-		content.x = space.x + marginLeft
-		content.y = space.y + marginTop
+		let x = space.x + marginLeft
+		let y = space.y + marginTop
+		
+		return {x: x, y: y}
+	},
+	centralizeContent: function(space) {
+		let position = this.contentPositionAsInCenter(space)
+		space.content.x = position.x
+		space.content.y = position.y
 	},
 	isPointInside: function(x, y) {
 		/* If point is inside a space, return that space
@@ -251,6 +260,8 @@ class Piece {
 		this.isBeingDragged = false;
 		this.isShadowVisible = false;
 		this.zIndex = 0;
+		this.targetX = null
+		this.targetY = null
 
 		// Select a random pattern
 		let index = Math.floor(Math.random() * Piece.patterns.length)
@@ -462,10 +473,43 @@ class Piece {
 			}
 		}
 	}
+	onDrop() {
+		if(this.isShadowVisible) {
+			this.placeOnBoard()
+			showNewPiece()
+			checkBoardColumns()
+			checkBoardRows()
+		} else {
+			console.log("shadow is not visible")
+		// Prepare an animation to get back to tray
+		for(let space of blocksTray.spaces) {
+			if(space.content != this) continue;
+			
+			let position = blocksTray.contentPositionAsInCenter(space)
+			this.targetX = position.x 
+			this.targetY = position.y
+		}
+		}
+	}
 	update() {
 		if (this.isBeingDragged) {
 			this.updateBlocksPosition();
 			this.updateShadowPosition();
+		}
+		
+		if(this.targetX || this.targetY) {
+			let diffX = this.x - this.targetX
+			let diffY = this.y - this.targetY
+			
+			if(diffX < -5) this.x += 10
+			else if (diffX > 5) this.x -= 10
+			else this.x = this.targetX 
+			
+			if(diffY < -5) this.y += 10
+			else if (diffY > 5) this.y -= 10
+			else this.y = this.targetY
+		
+			this.updateBlocksPosition()
 		}
 	}
 	draw(ctx) {
@@ -527,18 +571,8 @@ canvas.addEventListener("touchend", function (ev) {
 	touch.touching = false;
 	touch.touchingCount = 0;
 
-	if (touch.draging) {
-		let piece = touch.draging;
-
-		if (piece.isShadowVisible) {
-			piece.placeOnBoard();
-			showNewPiece();
-			checkBoardColumns()
-			checkBoardRows()
-		}
-
+	if (touch.draging) 
 		touch.drop()
-	}
 });
 
 function showNewPiece() {
