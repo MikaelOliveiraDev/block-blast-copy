@@ -495,20 +495,32 @@ class Piece {
 		if (this.isBeingDragged) {
 			this.updateBlocksPosition();
 			this.updateShadowPosition();
-		}
-		
-		if(this.targetX || this.targetY) {
-			let diffX = this.x - this.targetX
-			let diffY = this.y - this.targetY
+		} else if(this.targetX || this.targetY) {
+			let diffX = this.targetX - this.x
+			let diffY = this.targetY - this.y
 			
-			if(diffX < -5) this.x += 10
-			else if (diffX > 5) this.x -= 10
-			else this.x = this.targetX 
+			// Set a diagonal movement based on a proportion between 
+			// the complete movement and the hypotenuse
+			let hypotenuse = Math.sqrt(diffX*diffX + diffY*diffY)
+			let proportionX = diffX / hypotenuse
+			let proportionY = diffY / hypotenuse
+			let movementDiag = 20
+			let movementX = proportionX * movementDiag
+			let movementY = proportionY * movementDiag
 			
-			if(diffY < -5) this.y += 10
-			else if (diffY > 5) this.y -= 10
-			else this.y = this.targetY
-		
+			this.x += movementX
+			this.y += movementY
+			
+			// End animation
+			if(Math.abs(movementX) >= Math.abs(diffX)) {
+				this.x = this.targetX
+				this.targetX = null
+			}
+			if(Math.abs(movementY) >= Math.abs(diffY)) {
+				this.y = this.targetY
+				this.targetY = null
+			}
+			
 			this.updateBlocksPosition()
 		}
 	}
