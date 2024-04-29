@@ -284,6 +284,10 @@ class Piece {
 			[0, 1, 0],
 			[1, 1, 1]
 		],[
+			[1, 1, 1],
+			[1, 1, 1],
+			[1, 1, 1],
+		],[
 			[1, 0],
 			[1, 1],
 			[0, 1]
@@ -305,6 +309,9 @@ class Piece {
 			[1, 1, 1, 1]
 		],[
 			[1, 1],
+			[1, 1]
+		],[
+			[1, 0],
 			[1, 1]
 		]
 	]
@@ -477,8 +484,14 @@ class Piece {
 		if(this.isShadowVisible) {
 			this.placeOnBoard()
 			showNewPiece()
-			checkBoardColumns()
-			checkBoardRows()
+			let filledColumnsIndex = checkBoardColumns()
+			let filledRowsIndex = checkBoardRows()
+			
+			for(let column of filledColumnsIndex) 
+				clearBoardColumn(column)
+			for(let row of filledRowsIndex)
+				clearBoardRow(row)
+			
 		} else {
 			console.log("shadow is not visible")
 		// Prepare an animation to get back to tray
@@ -607,6 +620,8 @@ function showNewPiece() {
 
 function checkBoardColumns() {
 	// Check if some columns are filled
+	
+	let filledColumnsIndex = []
 	for (let column in board.grid) {
 		let columnHaveEmptyParts = false
 
@@ -616,11 +631,18 @@ function checkBoardColumns() {
 
 			break
 		}
-
-		if (!columnHaveEmptyParts) clearBoardColumn(column)
+		
+		if(!columnHaveEmptyParts)
+			filledColumnsIndex.push(column)
+		//if (!columnHaveEmptyParts) clearBoardColumn(column)
 	}
+	
+	return filledColumnsIndex
 }
 function checkBoardRows() {
+	// Check if some rows are filled 
+	
+	let filledRowsIndex = []
 	for (let row = 0; row < config.boardColumnLength; row++) {
 		let rowHaveEmptyParts = false
 
@@ -630,9 +652,13 @@ function checkBoardRows() {
 
 			break
 		}
-
-		if (!rowHaveEmptyParts) clearBoardRow(row)
+		
+		if(!rowHaveEmptyParts) 
+			filledRowsIndex.push(row)
+		//if (!rowHaveEmptyParts) clearBoardRow(row)
 	}
+	
+	return filledRowsIndex
 }
 function clearBoardColumn(column) {
 	let targetScore = 0
