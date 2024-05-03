@@ -366,6 +366,9 @@ class Piece {
 	checkFit(indexY, indexX) {
 		/* Check if board.grid has space to fit this piece in the given indexes*/
 		
+		indexX = Number(indexX)
+		indexY = Number(indexY)
+		
 		for(let iY in this.blocks) {
 			for(let iX in this.blocks[iY]) {
 				if(!this.blocks[iY][iX]) continue;
@@ -493,14 +496,17 @@ class Piece {
 		if(this.isShadowVisible) {
 			this.placeOnBoard()
 			showNewPiece()
+			
+			// Get row & columns that got filled
 			let filledColumnsIndex = checkBoardColumns()
 			let filledRowsIndex = checkBoardRows()
-			
+			// Clear them (if there are any)
 			for(let column of filledColumnsIndex) 
 				clearBoardColumn(column)
 			for(let row of filledRowsIndex)
 				clearBoardRow(row)
 			
+			checkLost()
 		} else {
 			console.log("shadow is not visible")
 		// Prepare an animation to get back to tray
@@ -686,6 +692,26 @@ function clearBoardRow(row) {
 		targetScore++
 	}
 	score.target += targetScore
+}
+
+function checkLost() {
+	let piece = blocksTray.spaces[0].content
+	let maxIndexX = config.boardColumnLength - piece.blocks[0].length
+	let maxIndexY = config.boardRowLength - piece.blocks.length
+	
+	// Check if fit on any part of the board grid
+	for(let indexX in board.grid) {
+		for(let indexY in board.grid[indexX]) {
+			if(indexX > maxIndexX || indexY > maxIndexY) continue
+			if(board.grid[indexX][indexY]) continue
+			
+			let fit = piece.checkFit(indexY, indexX)
+			
+			if(fit) return
+		}
+	}
+	
+	alert("You've lost! Refresh the page to play again.")
 }
 
 function update() {
