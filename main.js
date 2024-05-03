@@ -363,6 +363,26 @@ class Piece {
 			}
 		}
 	}
+	checkFit(indexY, indexX) {
+		/* Check if board.grid has space to fit this piece in the given indexes*/
+		
+		for(let iY in this.blocks) {
+			for(let iX in this.blocks[iY]) {
+				if(!this.blocks[iY][iX]) continue;
+				
+				iX = Number(iX)
+				iY = Number(iY)
+				
+				let absIndexX = indexX + iX
+				let absIndexY = indexY + iY
+				
+				if(board.grid[absIndexX][absIndexY])
+					return false
+			}
+		}
+		
+		return true
+	}
 	updateBlocksPosition() {
 		for (let y in this.blocks) {
 			for (let x in this.blocks[y]) {
@@ -405,36 +425,25 @@ class Piece {
 		if (isToTheLeft || isToTheRight || isOverTheTop || isUnderTheBottom)
 			return this.isShadowVisible = false;
 		
-		this.isShadowVisible = true;
-		
 		this.shadowIndexX = (shadowX - board.x) / config.blockWidth;
 		this.shadowIndexY = (shadowY - board.y) / config.blockWidth;
-
-		let isSpaceFree = true;
-		for (let y in this.shadow) {
-			for (let x in this.shadow[y]) {
-				if (!isSpaceFree) continue
-
-				x = Number(x)
-				y = Number(y)
-
-				if (this.shadow[y][x]) {
-					// Check if space on board is free
-					let indexX = this.shadowIndexX + x;
-					let indexY = this.shadowIndexY + y;
-					if (board.grid[indexX][indexY] != null)
-						isSpaceFree = false;
-
-					let blockOffsetX = x * config.blockWidth;
-					let blockOffsetY = y * config.blockWidth;
-
-					this.shadow[y][x].x = shadowX + blockOffsetX;
-					this.shadow[y][x].y = shadowY + blockOffsetY;
+		
+		let fit = this.checkFit(this.shadowIndexY, this.shadowIndexX)
+		if(fit) {
+			for(let y in this.shadow) {
+				for(let x in this.shadow[y]) {
+					if(!this.shadow[y][x]) continue;
+					let blockOffsetX = x * config.blockWidth
+					let blockOffsetY = y * config.blockWidth
+					
+					this.shadow[y][x].x = shadowX + blockOffsetX
+					this.shadow[y][x].y = shadowY + blockOffsetY
 				}
 			}
 		}
-
-		if (!isSpaceFree) this.isShadowVisible = false;
+		
+		this.isShadowVisible = fit 
+		
 	}
 	isPointInside(x, y) {
 		let point = {
