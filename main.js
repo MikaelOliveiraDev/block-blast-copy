@@ -64,7 +64,7 @@ const touch = {
 		}
 	},
 	drop: function() {
-		if(touch.draging.onDrop)
+		if (touch.draging.onDrop)
 			touch.draging.onDrop()
 		touch.draging.isBeingDragged = false;
 		touch.draging = null;
@@ -105,8 +105,11 @@ const blocksTray = {
 
 		let x = space.x + marginLeft
 		let y = space.y + marginTop
-		
-		return {x: x, y: y}
+
+		return {
+			x: x,
+			y: y
+		}
 	},
 	centralizeContent: function(space) {
 		let position = this.contentPositionAsInCenter(space)
@@ -156,13 +159,13 @@ const score = {
 	init: function() {
 		this.x = board.x + (board.width / 2)
 		this.y = board.y / 2
-		this.y = this.y > 16 ? this.y : 16
+		this.y = this.y > 16 ? this.y: 16
 	},
 	update: function() {
 		// Score change animation
-		if(this.current < this.target)
+		if (this.current < this.target)
 			this.current++
-		else if(this.current > this.target)
+		else if (this.current > this.target)
 			this.current--
 	},
 	draw: function(ctx) {
@@ -278,7 +281,7 @@ class Piece {
 		this.width = config.blockWidth * pattern[0].length
 		this.height = config.blockWidth * pattern.length
 	}
-	
+
 	static patterns = [
 		[
 			[0, 1, 0],
@@ -308,11 +311,21 @@ class Piece {
 		],[
 			[1, 1, 1, 1]
 		],[
+			[1, 1, 1, 1, 1]
+		],[
 			[1, 1],
 			[1, 1]
 		],[
 			[1, 0],
 			[1, 1]
+		],[
+			[1, 1]
+		],[
+			[1, 1],
+			[1, 1],
+			[1, 1]
+		],[
+			[1],
 		]
 	]
 	
@@ -365,25 +378,25 @@ class Piece {
 	}
 	checkFit(indexY, indexX) {
 		/* Check if board.grid has space to fit this piece in the given indexes*/
-		
+
 		indexX = Number(indexX)
 		indexY = Number(indexY)
-		
-		for(let iY in this.blocks) {
-			for(let iX in this.blocks[iY]) {
-				if(!this.blocks[iY][iX]) continue;
-				
+
+		for (let iY in this.blocks) {
+			for (let iX in this.blocks[iY]) {
+				if (!this.blocks[iY][iX]) continue;
+
 				iX = Number(iX)
 				iY = Number(iY)
-				
+
 				let absIndexX = indexX + iX
 				let absIndexY = indexY + iY
-				
-				if(board.grid[absIndexX][absIndexY])
+
+				if (board.grid[absIndexX][absIndexY])
 					return false
 			}
 		}
-		
+
 		return true
 	}
 	updateBlocksPosition() {
@@ -427,26 +440,26 @@ class Piece {
 		let isUnderTheBottom = shadowY > board.y + board.height - this.height
 		if (isToTheLeft || isToTheRight || isOverTheTop || isUnderTheBottom)
 			return this.isShadowVisible = false;
-		
+
 		this.shadowIndexX = (shadowX - board.x) / config.blockWidth;
 		this.shadowIndexY = (shadowY - board.y) / config.blockWidth;
-		
+
 		let fit = this.checkFit(this.shadowIndexY, this.shadowIndexX)
-		if(fit) {
-			for(let y in this.shadow) {
-				for(let x in this.shadow[y]) {
-					if(!this.shadow[y][x]) continue;
+		if (fit) {
+			for (let y in this.shadow) {
+				for (let x in this.shadow[y]) {
+					if (!this.shadow[y][x]) continue;
 					let blockOffsetX = x * config.blockWidth
 					let blockOffsetY = y * config.blockWidth
-					
+
 					this.shadow[y][x].x = shadowX + blockOffsetX
 					this.shadow[y][x].y = shadowY + blockOffsetY
 				}
 			}
 		}
-		
-		this.isShadowVisible = fit 
-		
+
+		this.isShadowVisible = fit
+
 	}
 	isPointInside(x, y) {
 		let point = {
@@ -493,41 +506,41 @@ class Piece {
 		}
 	}
 	onDrop() {
-		if(this.isShadowVisible) {
+		if (this.isShadowVisible) {
 			this.placeOnBoard()
 			showNewPiece()
-			
+
 			// Get row & columns that got filled
 			let filledColumnsIndex = checkBoardColumns()
 			let filledRowsIndex = checkBoardRows()
 			// Clear them (if there are any)
-			for(let column of filledColumnsIndex) 
+			for (let column of filledColumnsIndex)
 				clearBoardColumn(column)
-			for(let row of filledRowsIndex)
+			for (let row of filledRowsIndex)
 				clearBoardRow(row)
-			
+
 			checkLost()
 		} else {
 			console.log("shadow is not visible")
-		// Prepare an animation to get back to tray
-		for(let space of blocksTray.spaces) {
-			if(space.content != this) continue;
-			
-			let position = blocksTray.contentPositionAsInCenter(space)
-			this.targetX = position.x 
-			this.targetY = position.y
-		}
+			// Prepare an animation to get back to tray
+			for (let space of blocksTray.spaces) {
+				if (space.content != this) continue;
+
+				let position = blocksTray.contentPositionAsInCenter(space)
+				this.targetX = position.x
+				this.targetY = position.y
+			}
 		}
 	}
 	update() {
 		if (this.isBeingDragged) {
 			this.updateBlocksPosition();
 			this.updateShadowPosition();
-		} else if(this.targetX || this.targetY) {
+		} else if (this.targetX || this.targetY) {
 			let diffX = this.targetX - this.x
 			let diffY = this.targetY - this.y
-			
-			// Set a diagonal movement based on a proportion between 
+
+			// Set a diagonal movement based on a proportion between
 			// the complete movement and the hypotenuse
 			let hypotenuse = Math.sqrt(diffX*diffX + diffY*diffY)
 			let proportionX = diffX / hypotenuse
@@ -535,20 +548,20 @@ class Piece {
 			let movementDiag = 20
 			let movementX = proportionX * movementDiag
 			let movementY = proportionY * movementDiag
-			
+
 			this.x += movementX
 			this.y += movementY
-			
+
 			// End animation
-			if(Math.abs(movementX) >= Math.abs(diffX)) {
+			if (Math.abs(movementX) >= Math.abs(diffX)) {
 				this.x = this.targetX
 				this.targetX = null
 			}
-			if(Math.abs(movementY) >= Math.abs(diffY)) {
+			if (Math.abs(movementY) >= Math.abs(diffY)) {
 				this.y = this.targetY
 				this.targetY = null
 			}
-			
+
 			this.updateBlocksPosition()
 		}
 	}
@@ -556,16 +569,16 @@ class Piece {
 		// Draw shadow
 		if (this.isShadowVisible)
 			for (let row of this.shadow)
-				for (let item of row)
-					if (item)
-						item.draw(ctx);
+			for (let item of row)
+			if (item)
+			item.draw(ctx);
 
 
 		// Draw the actual blocks
 		for (let row of this.blocks)
 			for (let item of row)
-				if (item)
-					item.draw(ctx);
+			if (item)
+			item.draw(ctx);
 	}
 }
 
@@ -611,7 +624,7 @@ canvas.addEventListener("touchend", function (ev) {
 	touch.touching = false;
 	touch.touchingCount = 0;
 
-	if (touch.draging) 
+	if (touch.draging)
 		touch.drop()
 });
 
@@ -635,7 +648,7 @@ function showNewPiece() {
 
 function checkBoardColumns() {
 	// Check if some columns are filled
-	
+
 	let filledColumnsIndex = []
 	for (let column in board.grid) {
 		let columnHaveEmptyParts = false
@@ -646,17 +659,17 @@ function checkBoardColumns() {
 
 			break
 		}
-		
-		if(!columnHaveEmptyParts)
+
+		if (!columnHaveEmptyParts)
 			filledColumnsIndex.push(column)
 		//if (!columnHaveEmptyParts) clearBoardColumn(column)
 	}
-	
+
 	return filledColumnsIndex
 }
 function checkBoardRows() {
-	// Check if some rows are filled 
-	
+	// Check if some rows are filled
+
 	let filledRowsIndex = []
 	for (let row = 0; row < config.boardColumnLength; row++) {
 		let rowHaveEmptyParts = false
@@ -667,12 +680,12 @@ function checkBoardRows() {
 
 			break
 		}
-		
-		if(!rowHaveEmptyParts) 
+
+		if (!rowHaveEmptyParts)
 			filledRowsIndex.push(row)
 		//if (!rowHaveEmptyParts) clearBoardRow(row)
 	}
-	
+
 	return filledRowsIndex
 }
 function clearBoardColumn(column) {
@@ -695,22 +708,24 @@ function clearBoardRow(row) {
 }
 
 function checkLost() {
-	let piece = blocksTray.spaces[0].content
-	let maxIndexX = config.boardColumnLength - piece.blocks[0].length
-	let maxIndexY = config.boardRowLength - piece.blocks.length
-	
-	// Check if fit on any part of the board grid
-	for(let indexX in board.grid) {
-		for(let indexY in board.grid[indexX]) {
-			if(indexX > maxIndexX || indexY > maxIndexY) continue
-			if(board.grid[indexX][indexY]) continue
-			
-			let fit = piece.checkFit(indexY, indexX)
-			
-			if(fit) return
+	for (let space of blocksTray.spaces) {
+		let piece = space.content
+		let maxIndexX = config.boardColumnLength - piece.blocks[0].length
+		let maxIndexY = config.boardRowLength - piece.blocks.length
+
+		// Check if fit on any part of the board grid
+		for (let indexX in board.grid) {
+			for (let indexY in board.grid[indexX]) {
+				if (indexX > maxIndexX || indexY > maxIndexY) continue
+				if (board.grid[indexX][indexY]) continue
+
+				let fit = piece.checkFit(indexY, indexX)
+
+				if (fit) return
+			}
 		}
 	}
-	
+
 	alert("You've lost! Refresh the page to play again.")
 }
 
@@ -750,8 +765,8 @@ function render() {
 
 	for (let frame of screen)
 		for (let item of frame)
-			if (item.draw) item.draw(ctx);
-	
+		if (item.draw) item.draw(ctx);
+
 	score.draw(ctx)
-	
+
 }
