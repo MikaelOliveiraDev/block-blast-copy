@@ -1,28 +1,26 @@
 "user strict";
 
 const canvas = document.querySelector("canvas");
-const config = {
-	blockWidth: 38,
-	boardRowLength: 10,
-	boardColumnLength: 10
-};
 const board = {
 	grid: [],
 	x: 10,
 	y: 100,
 	width: null,
 	height: null,
+	blockWidth: 38,
+	xLength: 10,
+	yLength: 8,
 	init: function () {
 		// Define dimentions
-		this.width = config.blockWidth * config.boardRowLength;
-		this.height = config.blockWidth * config.boardColumnLength;
+		this.width = this.blockWidth * this.xLength;
+		this.height = this.blockWidth * this.yLength;
 		// Define position
 		this.x = (canvas.width - this.width) / 2;
 
 		// Prepare the grid
-		for (let x = 0; x < config.boardRowLength; x++) {
+		for (let x = 0; x < this.xLength; x++) {
 			this.grid[x] = [];
-			for (let y = 0; y < config.boardColumnLength; y++) {
+			for (let y = 0; y < this.yLength; y++) {
 				this.grid[x][y] = null;
 			}
 		}
@@ -33,11 +31,11 @@ const board = {
 		let evenOdd = (row + column) % 2;
 		let color = colors[evenOdd];
 
-		let x = config.blockWidth * row + this.x;
-		let y = config.blockWidth * column + this.y;
+		let x = this.blockWidth * row + this.x;
+		let y = this.blockWidth * column + this.y;
 
 		ctx.fillStyle = color;
-		ctx.fillRect(x, y, config.blockWidth, config.blockWidth);
+		ctx.fillRect(x, y, this.blockWidth, this.blockWidth);
 	}
 };
 const touch = {
@@ -60,7 +58,7 @@ const touch = {
 
 		if (item instanceof Piece) {
 			touch.dragOffsetX = -(item.width / 2);
-			touch.dragOffsetY = - item.height - config.blockWidth;
+			touch.dragOffsetY = - item.height - board.blockWidth;
 		}
 	},
 	drop: function() {
@@ -71,23 +69,25 @@ const touch = {
 	}
 };
 const blocksTray = {
-	spaces: [{
+	spaces: [
+		{
 		x: null,
 		y: null,
 		content: null
-	},
+		},
 		{
 			x: null,
 			y: null,
 			content: null
-		}],
+		}
+	],
 	spaceWidth: null,
 	spaceHeight: null,
 	spaceRows: 4,
 	spaceCols: 4,
 	init: function () {
-		this.spaceWidth = config.blockWidth * this.spaceRows
-		this.spaceHeight = config.blockWidth * this.spaceCols
+		this.spaceWidth = board.blockWidth * this.spaceRows
+		this.spaceHeight = board.blockWidth * this.spaceCols
 		let spaceBetween = 5;
 		let marginTop = 20;
 		let middleX = canvas.width / 2;
@@ -227,7 +227,7 @@ class Block {
 	constructor() {
 		this.x = null;
 		this.y = null;
-		this.width = config.blockWidth;
+		this.width = board.blockWidth;
 		this.img = null;
 		this.globalAlpha = 1;
 		this.zIndex = 0;
@@ -278,8 +278,8 @@ class Piece {
 
 		this.createGrid(pattern, img)
 		// Configure width and height
-		this.width = config.blockWidth * pattern[0].length
-		this.height = config.blockWidth * pattern.length
+		this.width = board.blockWidth * pattern[0].length
+		this.height = board.blockWidth * pattern.length
 	}
 
 	static patterns = [
@@ -405,8 +405,8 @@ class Piece {
 				let block = this.blocks[y][x]
 				if (block === null) continue
 
-				let blockOffsetX = x * config.blockWidth
-				let blockOffsetY = y * config.blockWidth
+				let blockOffsetX = x * board.blockWidth
+				let blockOffsetY = y * board.blockWidth
 				block.x = this.x + blockOffsetX
 				block.y = this.y + blockOffsetY
 			}
@@ -421,17 +421,17 @@ class Piece {
 
 		// The distance between the corner of the piece
 		// and the corner of the previous grid space
-		let remainingX = relX % config.blockWidth;
-		let remainingY = relY % config.blockWidth;
+		let remainingX = relX % board.blockWidth;
+		let remainingY = relY % board.blockWidth;
 		// Position the shadow on the corner of the
 		// previous grid space
 		let shadowX = pieceX - remainingX;
 		let shadowY = pieceY - remainingY;
 		// Check if the piece is actually
 		// closer to the next grid space
-		let halfBlock = config.blockWidth / 2;
-		if (remainingX > halfBlock) shadowX += config.blockWidth;
-		if (remainingY > halfBlock) shadowY += config.blockWidth;
+		let halfBlock = board.blockWidth / 2;
+		if (remainingX > halfBlock) shadowX += board.blockWidth;
+		if (remainingY > halfBlock) shadowY += board.blockWidth;
 
 		// Prevent the shadow the be shown outside of the board
 		let isToTheLeft = shadowX < board.x
@@ -441,16 +441,16 @@ class Piece {
 		if (isToTheLeft || isToTheRight || isOverTheTop || isUnderTheBottom)
 			return this.isShadowVisible = false;
 
-		this.shadowIndexX = (shadowX - board.x) / config.blockWidth;
-		this.shadowIndexY = (shadowY - board.y) / config.blockWidth;
+		this.shadowIndexX = (shadowX - board.x) / board.blockWidth;
+		this.shadowIndexY = (shadowY - board.y) / board.blockWidth;
 
 		let fit = this.checkFit(this.shadowIndexY, this.shadowIndexX)
 		if (fit) {
 			for (let y in this.shadow) {
 				for (let x in this.shadow[y]) {
 					if (!this.shadow[y][x]) continue;
-					let blockOffsetX = x * config.blockWidth
-					let blockOffsetY = y * config.blockWidth
+					let blockOffsetX = x * board.blockWidth
+					let blockOffsetY = y * board.blockWidth
 
 					this.shadow[y][x].x = shadowX + blockOffsetX
 					this.shadow[y][x].y = shadowY + blockOffsetY
@@ -481,8 +481,8 @@ class Piece {
 	}
 	placeOnBoard() {
 		// Align this piece and its blocks on the board grid
-		this.x = this.shadowIndexX * config.blockWidth + board.x;
-		this.y = this.shadowIndexY * config.blockWidth + board.y;
+		this.x = this.shadowIndexX * board.blockWidth + board.x;
+		this.y = this.shadowIndexY * board.blockWidth + board.y;
 		this.updateBlocksPosition();
 
 		// Put each block of piece in the board
@@ -671,10 +671,10 @@ function checkBoardRows() {
 	// Check if some rows are filled
 
 	let filledRowsIndex = []
-	for (let row = 0; row < config.boardColumnLength; row++) {
+	for (let row = 0; row < board.yLength; row++) {
 		let rowHaveEmptyParts = false
 
-		for (let column = 0; column < config.boardColumnLength; column++) {
+		for (let column = 0; column < board.yLength; column++) {
 			if (board.grid[column][row]) continue
 			else rowHaveEmptyParts = true
 
@@ -690,7 +690,7 @@ function checkBoardRows() {
 }
 function clearBoardColumn(column) {
 	let targetScore = 0
-	for (let row = 0; row < config.boardRowLength; row++) {
+	for (let row = 0; row < board.xLength; row++) {
 		pool.put(board.grid[column][row], "blocks")
 		board.grid[column][row] = null
 		targetScore++
@@ -699,7 +699,7 @@ function clearBoardColumn(column) {
 }
 function clearBoardRow(row) {
 	let targetScore = 0
-	for (let column = 0; column < config.boardColumnLength; column++) {
+	for (let column = 0; column < board.yLength; column++) {
 		pool.put(board.grid[column][row], "blocks")
 		board.grid[column][row] = null
 		targetScore++
@@ -710,8 +710,8 @@ function clearBoardRow(row) {
 function checkLost() {
 	for (let space of blocksTray.spaces) {
 		let piece = space.content
-		let maxIndexX = config.boardColumnLength - piece.blocks[0].length
-		let maxIndexY = config.boardRowLength - piece.blocks.length
+		let maxIndexX = board.yLength - piece.blocks[0].length
+		let maxIndexY = board.xLength - piece.blocks.length
 
 		// Check if fit on any part of the board grid
 		for (let indexX in board.grid) {
@@ -752,8 +752,8 @@ function render() {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 	// Draw board spaces or items
-	for (let row = 0; row < config.boardRowLength; row++) {
-		for (let column = 0; column < config.boardColumnLength; column++) {
+	for (let row = 0; row < board.xLength; row++) {
+		for (let column = 0; column < board.yLength; column++) {
 			let onSpace = board.grid[row][column];
 
 			if (onSpace == null) board.drawSpace(row, column, ctx);
