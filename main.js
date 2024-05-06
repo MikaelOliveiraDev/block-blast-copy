@@ -18,21 +18,20 @@ const board = {
 		this.x = (canvas.width - this.width) / 2;
 
 		// Prepare the grid
-		for (let x = 0; x < this.xLength; x++) {
-			this.grid[x] = [];
-			for (let y = 0; y < this.yLength; y++) {
-				this.grid[x][y] = null;
+		for (let indexY = 0; indexY < this.yLength; indexY++) {
+			this.grid[indexY] = [];
+			for (let indexX = 0; indexX < this.xLength; indexX++) {
+				this.grid[indexY][indexX] = null;
 			}
 		}
 	},
-	drawSpace: function (row, column, ctx) {
-		const colors = ["#a3a3a3",
-			"hsl(0,0%,58%)"];
-		let evenOdd = (row + column) % 2;
+	drawSpace: function (indexY, indexX, ctx) {
+		const colors = ["#a3a3a3", "#949494"];
+		let evenOdd = (indexY + indexX) % 2;
 		let color = colors[evenOdd];
 
-		let x = this.blockWidth * row + this.x;
-		let y = this.blockWidth * column + this.y;
+		let x = this.blockWidth * indexX + this.x;
+		let y = this.blockWidth * indexY + this.y;
 
 		ctx.fillStyle = color;
 		ctx.fillRect(x, y, this.blockWidth, this.blockWidth);
@@ -376,23 +375,25 @@ class Piece {
 			}
 		}
 	}
-	checkFit(indexY, indexX) {
-		/* Check if board.grid has space to fit this piece in the given indexes*/
+	checkFit(desY, desX) {
+		/* Check if board.grid has space to fit this piece in the given indexes. */
+		/* desX => destination index in which the piece would be placed */
+		/* blcX => block index relative to the piece index */
+		/* brdX => board space index in which the block would be placed */
+		desX = Number(desX)
+		desY = Number(desY)
 
-		indexX = Number(indexX)
-		indexY = Number(indexY)
+		for (let blcY in this.blocks) {
+			for (let blcX in this.blocks[blcY]) {
+				if (!this.blocks[blcY][blcX]) continue;
 
-		for (let iY in this.blocks) {
-			for (let iX in this.blocks[iY]) {
-				if (!this.blocks[iY][iX]) continue;
+				blcX = Number(blcX)
+				blcY = Number(blcY)
 
-				iX = Number(iX)
-				iY = Number(iY)
+				let brdX = desX + blcX
+				let brdY = desY + blcY
 
-				let absIndexX = indexX + iX
-				let absIndexY = indexY + iY
-
-				if (board.grid[absIndexX][absIndexY])
+				if (board.grid[brdY][brdX])
 					return false
 			}
 		}
@@ -491,7 +492,7 @@ class Piece {
 				if (this.blocks[y][x]) {
 					let indexX = this.shadowIndexX + Number(x)
 					let indexY = this.shadowIndexY + Number(y)
-					board.grid[indexX][indexY] = this.blocks[y][x]
+					board.grid[indexY][indexX] = this.blocks[y][x]
 				}
 			}
 		}
@@ -511,17 +512,17 @@ class Piece {
 			showNewPiece()
 
 			// Get row & columns that got filled
-			let filledColumnsIndex = checkBoardColumns()
-			let filledRowsIndex = checkBoardRows()
+			let filledYs = checkBoardYs()
+			let filledXs = checkBoardXs()
 			// Clear them (if there are any)
-			for (let column of filledColumnsIndex)
-				clearBoardColumn(column)
-			for (let row of filledRowsIndex)
-				clearBoardRow(row)
-
+			for (let indexY of filledYs)
+				clearAlongY(indexY)
+			for (let indexX of filledXs)
+				clearAlongX(indexX)
+			
+			console.log(filledXs, filledYs)
 			checkLost()
 		} else {
-			console.log("shadow is not visible")
 			// Prepare an animation to get back to tray
 			for (let space of blocksTray.spaces) {
 				if (space.content != this) continue;
@@ -646,62 +647,61 @@ function showNewPiece() {
 	}
 }
 
-function checkBoardColumns() {
-	// Check if some columns are filled
-
-	let filledColumnsIndex = []
-	for (let column in board.grid) {
-		let columnHaveEmptyParts = false
-
-		for (let row in board.grid[column]) {
-			if (board.grid[column][row]) continue
-			else columnHaveEmptyParts = true
-
-			break
-		}
-
-		if (!columnHaveEmptyParts)
-			filledColumnsIndex.push(column)
-		//if (!columnHaveEmptyParts) clearBoardColumn(column)
-	}
-
-	return filledColumnsIndex
-}
-function checkBoardRows() {
+function checkBoardYs() {
 	// Check if some rows are filled
 
-	let filledRowsIndex = []
-	for (let row = 0; row < board.yLength; row++) {
-		let rowHaveEmptyParts = false
+	let filledYs = []
+	for (let indexY in board.grid) {
+		let containsEmptyParts = false
 
-		for (let column = 0; column < board.yLength; column++) {
-			if (board.grid[column][row]) continue
-			else rowHaveEmptyParts = true
+		for (let indexX in board.grid[indexY]) {
+			
+			if (board.grid[indexY][indexX]) continue
+			else containsEmptyParts = true
+			break
+		}
+
+		if (!containsEmptyParts)
+			filledYs.push(indexY)
+	}
+	return filledYs
+}
+function checkBoardXs() {
+	// Check if some columns are filled
+
+	let filledXs = []
+	for (let indexX = 0; indexX < board.xLength; indexX++) {
+		let containsEmptyParts = false
+
+		for (let indexY = 0; indexY < board.yLength; indexY++) {
+			if (board.grid[indexY][indexX]) continue
+			else containsEmptyParts = true
 
 			break
 		}
 
-		if (!rowHaveEmptyParts)
-			filledRowsIndex.push(row)
-		//if (!rowHaveEmptyParts) clearBoardRow(row)
+		if (!containsEmptyParts)
+			filledXs.push(indexX)
 	}
 
-	return filledRowsIndex
+	return filledXs
 }
-function clearBoardColumn(column) {
+function clearAlongY(indexY) {
+	console.log(6)
 	let targetScore = 0
-	for (let row = 0; row < board.xLength; row++) {
-		pool.put(board.grid[column][row], "blocks")
-		board.grid[column][row] = null
+	for (let indexX = 0; indexX < board.xLength; indexX++) {
+		pool.put(board.grid[indexY][indexX], "blocks")
+		board.grid[indexY][indexX] = null
 		targetScore++
 	}
 	score.target += targetScore
 }
-function clearBoardRow(row) {
+function clearAlongX(indexX) {
+	console.log(7)
 	let targetScore = 0
-	for (let column = 0; column < board.yLength; column++) {
-		pool.put(board.grid[column][row], "blocks")
-		board.grid[column][row] = null
+	for (let indexY = 0; indexY < board.yLength; indexY++) {
+		pool.put(board.grid[indexY][indexX], "blocks")
+		board.grid[indexY][indexX] = null
 		targetScore++
 	}
 	score.target += targetScore
@@ -710,15 +710,15 @@ function clearBoardRow(row) {
 function checkLost() {
 	for (let space of blocksTray.spaces) {
 		let piece = space.content
-		let maxIndexX = board.yLength - piece.blocks[0].length
-		let maxIndexY = board.xLength - piece.blocks.length
+		let maxIndexY = board.yLength - piece.blocks.length
+		let maxIndexX = board.xLength - piece.blocks[0].length
 
 		// Check if fit on any part of the board grid
-		for (let indexX in board.grid) {
-			for (let indexY in board.grid[indexX]) {
+		for (let indexY in board.grid) {
+			for (let indexX in board.grid[indexY]) {
 				if (indexX > maxIndexX || indexY > maxIndexY) continue
-				if (board.grid[indexX][indexY]) continue
-
+				if (board.grid[indexY][indexX]) continue
+				
 				let fit = piece.checkFit(indexY, indexX)
 
 				if (fit) return
@@ -752,11 +752,11 @@ function render() {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 	// Draw board spaces or items
-	for (let row = 0; row < board.xLength; row++) {
-		for (let column = 0; column < board.yLength; column++) {
-			let onSpace = board.grid[row][column];
+	for (let indexY = 0; indexY < board.yLength; indexY++) {
+		for (let indexX = 0; indexX < board.xLength; indexX++) {
+			let onSpace = board.grid[indexY][indexX];
 
-			if (onSpace == null) board.drawSpace(row, column, ctx);
+			if (onSpace == null) board.drawSpace(indexY, indexX, ctx);
 			else onSpace.draw(ctx);
 		}
 	}
