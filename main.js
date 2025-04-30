@@ -37,34 +37,36 @@ const board = {
 		ctx.fillRect(x, y, this.blockWidth, this.blockWidth);
 	}
 };
-const touch = {
+const pointer = {
 	x: null,
 	y: null,
-	touching: false,
-	touchingCount: 0,
-	draging: null,
+	hold: 0,
+	dragging: null,
 	dragOffsetX: 0,
 	dragOffsetY: 0,
 	update: function () {
-		if (this.draging) {
-			this.draging.x = this.x + this.dragOffsetX;
-			this.draging.y = this.y + this.dragOffsetY;
+		if(this.hold)
+			this.hold++
+
+		if (this.dragging) {
+			this.dragging.x = this.x + this.dragOffsetX;
+			this.dragging.y = this.y + this.dragOffsetY;
 		}
 	},
 	drag: function(item) {
-		touch.draging = item;
-		touch.draging.isBeingDragged = true;
+		pointer.dragging = item;
+		pointer.dragging.isBeingDragged = true;
 
 		if (item instanceof Piece) {
-			touch.dragOffsetX = -(item.width / 2);
-			touch.dragOffsetY = - item.height - board.blockWidth;
+			pointer.dragOffsetX = -(item.width / 2);
+			pointer.dragOffsetY = - item.height - board.blockWidth;
 		}
 	},
 	drop: function() {
-		if (touch.draging.onDrop)
-			touch.draging.onDrop()
-		touch.draging.isBeingDragged = false;
-		touch.draging = null;
+		if (pointer.dragging.onDrop)
+			pointer.dragging.onDrop()
+		pointer.dragging.isBeingDragged = false;
+		pointer.dragging = null;
 	}
 };
 const blocksTray = {
@@ -460,7 +462,6 @@ class Piece {
 		}
 
 		this.isShadowVisible = fit
-
 	}
 	isPointInside(x, y) {
 		let point = {
@@ -519,8 +520,6 @@ class Piece {
 				clearAlongY(indexY)
 			for (let indexX of filledXs)
 				clearAlongX(indexX)
-			
-			console.log(filledXs, filledYs)
 			checkLost()
 		} else {
 			// Prepare an animation to get back to tray
@@ -583,52 +582,41 @@ class Piece {
 	}
 }
 
-canvas.addEventListener("touchstart", function (ev) {
+canvas.addEventListener("pointerdown", function (ev) {
 	ev.preventDefault();
 
-	let touchEv = ev.touches[0];
 	let rect = ev.target.getBoundingClientRect();
 
-	let touchX = touchEv.clientX - rect.left;
-	let touchY = touchEv.clientY - rect.top;
-
-	touch.x = touchX;
-	touch.y = touchY;
-	touch.touching = true;
+	pointer.x = ev.clientX - rect.left;
+	pointer.y = ev.clientY - rect.top;
+	pointer.hold = 0;
 
 	// Check if pick something on screen objs
 	for (let frame of screen)
 		for (let item of frame)
-		if (item.isPointInside(touchX, touchY))
-		touch.drag(item)
+		if (item.isPointInside(pointer.x, pointer.y))
+		pointer.drag(item)
 
 	// Check if clicked on tray
-	let space = blocksTray.isPointInside(touchX, touchY)
+	let space = blocksTray.isPointInside(pointer.x, pointer.y)
 	if (space && space.content)
-		touch.drag(space.content)
+		pointer.drag(space.content)
 });
-canvas.addEventListener("touchmove", function (ev) {
+canvas.addEventListener("pointermove", function (ev) {
 	ev.preventDefault();
 
-	let touchEv = ev.touches[0];
 	let rect = ev.target.getBoundingClientRect();
-
-	let touchX = touchEv.clientX - rect.left;
-	let touchY = touchEv.clientY - rect.top;
-
-	touch.x = touchX;
-	touch.y = touchY;
+	pointer.x = ev.clientX - rect.left;
+	pointer.y = ev.clientY - rect.top;
 });
-canvas.addEventListener("touchend", function (ev) {
-	touch.x = null;
-	touch.y = null;
-	touch.touching = false;
-	touch.touchingCount = 0;
+canvas.addEventListener("pointerup", function (ev) {
+	pointer.x = null;
+	pointer.y = null;
+	pointer.hold = false;
 
-	if (touch.draging)
-		touch.drop()
+	if (pointer.dragging)
+		pointer.drop()
 });
-
 function showNewPiece() {
 	let spaces = blocksTray.spaces;
 
@@ -687,7 +675,6 @@ function checkBoardXs() {
 	return filledXs
 }
 function clearAlongY(indexY) {
-	console.log(6)
 	let targetScore = 0
 	for (let indexX = 0; indexX < board.xLength; indexX++) {
 		pool.put(board.grid[indexY][indexX], "blocks")
@@ -697,7 +684,6 @@ function clearAlongY(indexY) {
 	score.target += targetScore
 }
 function clearAlongX(indexX) {
-	console.log(7)
 	let targetScore = 0
 	for (let indexY = 0; indexY < board.yLength; indexY++) {
 		pool.put(board.grid[indexY][indexX], "blocks")
@@ -732,7 +718,7 @@ function checkLost() {
 function update() {
 	requestAnimationFrame(update);
 
-	touch.update();
+	pointer.update();
 	score.update()
 
 	// Update each object on screen
