@@ -1,6 +1,7 @@
 "user strict";
 
 const canvas = document.querySelector("canvas");
+const ctx = canvas.getContext("2d");
 const board = {
 	grid: [],
 	x: 10,
@@ -148,7 +149,6 @@ const blocksTray = {
 		);
 	}
 };
-const screen = [];
 const score = {
 	current: 0,
 	target: 0,
@@ -176,19 +176,33 @@ const score = {
 	}
 }
 
-screen.put = function (item, zIndex) {
-	let frame = screen[zIndex];
+const ZINDEX = {
+	BACKGROUND: 0,
+	BOARD_ITEMS: 1,
+	PIECES: 2,
+	UI: 3
+}
+const layers = []
+function addToLayer(item) {
+	let zIndex = item.zIndex
 
-	if (!frame) screen[zIndex] = [];
+	if(!layers[zIndex]) 
+		layers[zIndex] = []
 
-	screen[zIndex].push(item);
-};
-screen.remove = function (item, zIndex) {
-	let frame = screen[zIndex];
-	let index = frame.indexOf(item);
+	layers[zIndex].push(item)
+}
+function removeFromLayer(item) {
+	let zIndex = item.zIndex
+	let index = layers[zIndex].indexOf(item)
 
-	if (index != -1) frame.splice(index, 1);
-};
+	if(index != -1)
+		layers.splice(index, 1)
+}
+function changeLayer(item, zIndex) {
+	removeFromLayer(item)
+	item.zIndex(zIndex)
+	addToLayer(item)
+}
 
 window.onload = () => {
 	canvas.height = 800;
@@ -221,7 +235,7 @@ class Block {
 		this.zIndex = 0;
 	}
 
-	draw(ctx, x, y) {
+	draw(x, y) {
 		x = x || this.x;
 		y = y || this.y;
 		ctx.globalAlpha = this.globalAlpha;
@@ -353,10 +367,13 @@ class Piece {
 					this.blocks[y][x] = new Block()
 					this.blocks[y][x].img = img
 					this.blocks[y][x].globalAlpha = 1
+					this.blocks[y][x].zIndex = ZINDEX.PIECES
+					addToLayer(this.blocks[y][x])
 
 					this.shadow[y][x] = new Block()
 					this.shadow[y][x].img = img
 					this.shadow[y][x].globalAlpha = .5
+					this.shadow[y][x].zIndex = ZINDEX.BOARD_ITEMS
 				} else {
 					this.blocks[y][x] = null;
 					this.shadow[y][x] = null;
@@ -444,6 +461,14 @@ class Piece {
 
 					this.shadow[y][x].x = shadowX + blockOffsetX
 					this.shadow[y][x].y = shadowY + blockOffsetY
+					addToLayer(this.shadow[y][x])
+				}
+			}
+		} else {
+			for (let y in this.shadow) {
+				for (let x in this.shadow[y]) {
+					if (!this.shadow[y][x]) continue;
+					removeFromLayer(this.shadow[y][x])
 				}
 			}
 		}
@@ -486,8 +511,7 @@ class Piece {
 		}
 
 		// Remove this piece from screen and tray
-		screen.remove(this,
-			this.zIndex);
+		removeFromLayer(this)
 		for (let space of blocksTray.spaces) {
 			if (space.content == this) {
 				space.content = null;
@@ -552,21 +576,6 @@ class Piece {
 			this.updateBlocksPosition()
 		}
 	}
-	draw(ctx) {
-		// Draw shadow
-		if (this.isShadowVisible)
-			for (let row of this.shadow)
-			for (let item of row)
-			if (item)
-			item.draw(ctx);
-
-
-		// Draw the actual blocks
-		for (let row of this.blocks)
-			for (let item of row)
-			if (item)
-			item.draw(ctx);
-	}
 }
 
 canvas.addEventListener("pointerdown", function (ev) {
@@ -579,10 +588,11 @@ canvas.addEventListener("pointerdown", function (ev) {
 	pointer.hold = 0;
 
 	// Check if pick something on screen objs
-	for (let frame of screen)
-		for (let item of frame)
-		if (item.isPointInside(pointer.x, pointer.y))
-		pointer.drag(item)
+	for (let layer of layers)
+		if(layer)
+			for (let item of layer)
+				if (item.isPointInside(pointer.x, pointer.y))
+					pointer.drag(item)
 
 	// Check if clicked on tray
 	let space = blocksTray.isPointInside(pointer.x, pointer.y)
@@ -616,8 +626,9 @@ function showNewPiece() {
 		space.content = piece;
 		blocksTray.centralizeContent(space)
 		piece.updateBlocksPosition();
+		piece.zIndex = ZINDEX.PIECES
 
-		screen.put(piece, 0);
+		addToLayer(piece)
 		break;
 	}
 }
@@ -704,20 +715,16 @@ function update() {
 	requestAnimationFrame(update);
 
 	pointer.update();
-	score.update()
 
-	// Update each object on screen
-	for (let frame of screen) {
-		for (let item of frame) {
-			if (item.update) item.update();
-		}
-	}
+	for (let layer of layers)
+		if(layer)
+			for (let item of layer)
+				if(item.update)
+					item.update()
 
 	render();
 }
 function render() {
-	let ctx = canvas.getContext("2d");
-
 	// Paint the hole canvas
 	ctx.fillStyle = "#4f6875";
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -734,9 +741,11 @@ function render() {
 
 	blocksTray.draw(ctx);
 
-	for (let frame of screen)
-		for (let item of frame)
-		if (item.draw) item.draw(ctx);
+		for (let layer of layers)
+			if(layer)
+				for (let item of layer)
+					if(item.draw)
+						item.draw()
 
 	score.draw(ctx)
 
