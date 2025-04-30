@@ -149,9 +149,6 @@ const blocksTray = {
 	}
 };
 const screen = [];
-const pool = {
-	blocks: []
-};
 const score = {
 	current: 0,
 	target: 0,
@@ -192,16 +189,6 @@ screen.remove = function (item, zIndex) {
 
 	if (index != -1) frame.splice(index, 1);
 };
-
-pool.get = function (objString) {
-	if (objString == "block") {
-		if (pool.blocks.length == 0) return new Block()
-		else return pool.blocks.pop()
-	}
-}
-pool.put = function(obj, objString) {
-	pool[objString].push(obj)
-}
 
 window.onload = () => {
 	canvas.height = 800;
@@ -363,11 +350,11 @@ class Piece {
 				//console.log(pattern.length, pattern[y].length)
 				//console.log(y, x, pattern)
 				if (pattern[y][x] === 1) {
-					this.blocks[y][x] = pool.get("block")
+					this.blocks[y][x] = new Block()
 					this.blocks[y][x].img = img
 					this.blocks[y][x].globalAlpha = 1
 
-					this.shadow[y][x] = pool.get("block")
+					this.shadow[y][x] = new Block()
 					this.shadow[y][x].img = img
 					this.shadow[y][x].globalAlpha = .5
 				} else {
@@ -677,7 +664,6 @@ function checkBoardXs() {
 function clearAlongY(indexY) {
 	let targetScore = 0
 	for (let indexX = 0; indexX < board.xLength; indexX++) {
-		pool.put(board.grid[indexY][indexX], "blocks")
 		board.grid[indexY][indexX] = null
 		targetScore++
 	}
@@ -686,7 +672,6 @@ function clearAlongY(indexY) {
 function clearAlongX(indexX) {
 	let targetScore = 0
 	for (let indexY = 0; indexY < board.yLength; indexY++) {
-		pool.put(board.grid[indexY][indexX], "blocks")
 		board.grid[indexY][indexX] = null
 		targetScore++
 	}
