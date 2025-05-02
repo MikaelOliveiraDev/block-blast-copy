@@ -755,12 +755,12 @@ function render() {
   ctx.fillStyle = "#4f6875";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw board spaces or items
+  // Draw board spaces
   for (let indexY = 0; indexY < board.yLength; indexY++) {
     for (let indexX = 0; indexX < board.xLength; indexX++) {
       let onSpace = board.grid[indexY][indexX];
 
-      if (onSpace == null) board.drawSpace(indexY, indexX, ctx);
+      board.drawSpace(indexY, indexX, ctx);
     }
   }
 
