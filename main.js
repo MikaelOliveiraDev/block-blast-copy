@@ -259,7 +259,6 @@ class Block {
 		return false;
 	}
 }
-
 class Piece {
 	constructor() {
 		this.x = null;
@@ -375,24 +374,31 @@ class Piece {
 
 	checkFit(desY, desX) {
 		/* Check if board.grid has space to fit this piece in the given indexes. */
-		/* desX => destination index in which the piece would be placed */
-		/* blcX => block index relative to the piece index */
-		/* brdX => board space index in which the block would be placed */
+		/* desX => destination index in which the PIECE would be placed */
+		/* blcX => BLOCK index relative to the PIECE index */
+		/* brdX => BOARD space index in which the BLOCK would be placed */
 		desX = Number(desX)
 		desY = Number(desY)
 
-		for (let blcY in this.blocks) {
-			for (let blcX in this.blocks[blcY]) {
+		for (let blcY = 0; blcY < this.blocks.length; blcY++) {
+			for (let blcX = 0; blcX < this.blocks[blcY].length; blcX++) {
 				if (!this.blocks[blcY][blcX]) continue;
-
-				blcX = Number(blcX)
-				blcY = Number(blcY)
 
 				let brdX = desX + blcX
 				let brdY = desY + blcY
 
-				if (board.grid[brdY][brdX])
+				if (board.grid[brdY] === undefined) {
+					console.warn(`brdY[${brdY}] === undefined`)
 					return false
+				}
+				if (board.grid[brdY][brdX] === undefined) {
+					console.warn(`brdX[${brdX}] === undefined`)
+					return false
+				}
+				if (board.grid[brdY][brdX])  {
+					console.warn(`grid[${brdY}][${brdX}] ocupied`)
+					return false
+				}
 			}
 		}
 
@@ -441,12 +447,12 @@ class Piece {
 		this.updateBlocksPosition();
 
 		// Put each block of piece in the board
-		for (let y in this.blocks) {
-			for (let x in this.blocks[y]) {
+		for (let y = 0; y < this.blocks.length; y++) {
+			for (let x = 0; x < this.blocks[y].length; x++) {
 				let block = this.blocks[y][x]
 				if (block) {
-					let bx = indexX + Number(x)
-					let by = indexY + Number(y)
+					let bx = indexX + x
+					let by = indexY + y
 					board.grid[by][bx] = block
 					changeLayer(block, ZINDEX.BOARD_ITEMS)
 				}
@@ -525,6 +531,7 @@ class Piece {
 		}
 	}
 }
+
 canvas.addEventListener("pointerdown", function (ev) {
 	ev.preventDefault();
 
