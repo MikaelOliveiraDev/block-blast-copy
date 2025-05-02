@@ -192,15 +192,22 @@ function addToLayer(item) {
 	layers[zIndex].push(item)
 }
 function removeFromLayer(item) {
-	let zIndex = item.zIndex
-	let index = layers[zIndex].indexOf(item)
-
-	if(index != -1)
-		layers.splice(index, 1)
+    let zIndex = item.zIndex;
+    let layer = layers[zIndex];
+    if (!layer) {
+        console.log(`Camada ${zIndex} não existe!`);
+        return;
+    }
+    for (let i = 0; i < layer.length; i++) {
+        if (layer[i] === item) {
+            layer.splice(i, 1);
+            return; 
+        }
+    }
 }
 function changeLayer(item, zIndex) {
 	removeFromLayer(item)
-	item.zIndex(zIndex)
+	item.zIndex = zIndex
 	addToLayer(item)
 }
 
@@ -232,7 +239,6 @@ class Block {
 		this.width = board.blockWidth;
 		this.img = null;
 		this.globalAlpha = 1;
-		this.zIndex = 0;
 	}
 
 	draw(x, y) {
@@ -264,7 +270,6 @@ class Piece {
 		this.shadowIndexY = null;
 		this.isBeingDragged = false;
 		this.isShadowVisible = false;
-		this.zIndex = 0;
 		this.targetX = null
 		this.targetY = null
 
@@ -502,10 +507,12 @@ class Piece {
 		// Put each block of piece in the board
 		for (let y in this.blocks) {
 			for (let x in this.blocks[y]) {
-				if (this.blocks[y][x]) {
+				let block = this.blocks[y][x]
+				if (block) {
 					let indexX = this.shadowIndexX + Number(x)
 					let indexY = this.shadowIndexY + Number(y)
-					board.grid[indexY][indexX] = this.blocks[y][x]
+					board.grid[indexY][indexX] = block
+					changeLayer(block, ZINDEX.BOARD_ITEMS)
 				}
 			}
 		}
@@ -641,7 +648,6 @@ function checkBoardYs() {
 		let containsEmptyParts = false
 
 		for (let indexX in board.grid[indexY]) {
-			
 			if (board.grid[indexY][indexX]) continue
 			else containsEmptyParts = true
 			break
@@ -675,6 +681,7 @@ function checkBoardXs() {
 function clearAlongY(indexY) {
 	let targetScore = 0
 	for (let indexX = 0; indexX < board.xLength; indexX++) {
+		removeFromLayer(board.grid[indexY][indexX])
 		board.grid[indexY][indexX] = null
 		targetScore++
 	}
@@ -683,6 +690,7 @@ function clearAlongY(indexY) {
 function clearAlongX(indexX) {
 	let targetScore = 0
 	for (let indexY = 0; indexY < board.yLength; indexY++) {
+		removeFromLayer(board.grid[indexY][indexX])
 		board.grid[indexY][indexX] = null
 		targetScore++
 	}
@@ -735,7 +743,6 @@ function render() {
 			let onSpace = board.grid[indexY][indexX];
 
 			if (onSpace == null) board.drawSpace(indexY, indexX, ctx);
-			else onSpace.draw(ctx);
 		}
 	}
 
