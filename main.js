@@ -311,8 +311,8 @@ class Piece {
     this.y = null;
     this.blocks = [];
     this.isBeingDragged = false;
-    this.targetX = null;
-    this.targetY = null;
+    this.needsPositionUpdate = false;
+    this.animations = []
 
     // Select a random pattern
     let index = Math.floor(Math.random() * Piece.patterns.length);
@@ -537,46 +537,59 @@ class Piece {
       for (let indexX of filledXs) clearAlongX(indexX);
       checkLost();
     } else {
-      // Prepare an animation to get back to tray
-      for (let space of blocksTray.spaces) {
-        if (space.content != this) continue;
-        let position = blocksTray.contentPositionAsInCenter(space);
-        this.targetX = position.x;
-        this.targetY = position.y;
-      }
+      this.startGoBackAnimation()
     }
   }
 
-  update() {
-    if (this.isBeingDragged) {
+  startGoBackAnimation(callback) {
+    let space = null
+    for (space of blocksTray.spaces) 
+      if (space.content === this) break
+
+    if (!space) console.error("Piece is not positioned in blocksTray")
+    
+    const target = blocksTray.contentPositionAsInCenter(space);
+    const SPEED_PIXELS_PER_FRAME = 4;
+    const dx = target.x - this.x;
+    const dy = target.y - this.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const duration = Math.ceil(distance / SPEED_PIXELS_PER_FRAME);
+
+    let complete = 0
+    const checkAllComplete = () => {
+      if (++complete === 2 && callback) callback()
+    }
+
+    this.animations.push(
+      new Animation({
+        property: "x",
+        from: this.x,
+        to: target.x,
+        duration,
+        onUpdate: (x) => this.x = x,
+        onComplete: checkAllComplete
+      }),
+      new Animation({
+        property: "y",
+        from: this.y,
+        to: target.y,
+        duration,
+        onUpdate: (y) => this.y = y,
+        onComplete: checkAllComplete
+      })
+    )
+  }
+  update(now) {
+    
+    this.animations = this.animations.filter(animation => {
+      animation.update(now)
+      this.needsPositionUpdate = true
+      return !animation.finished
+    })
+
+    if (this.isBeingDragged || this.needsPositionUpdate) {
       this.updateBlocksPosition();
-    } else if (this.targetX || this.targetY) {
-      let diffX = this.targetX - this.x;
-      let diffY = this.targetY - this.y;
-
-      // Set a diagonal movement based on a proportion between
-      // the complete movement and the hypotenuse
-      let hypotenuse = Math.sqrt(diffX * diffX + diffY * diffY);
-      let proportionX = diffX / hypotenuse;
-      let proportionY = diffY / hypotenuse;
-      let movementDiag = 20;
-      let movementX = proportionX * movementDiag;
-      let movementY = proportionY * movementDiag;
-
-      this.x += movementX;
-      this.y += movementY;
-
-      // End animation
-      if (Math.abs(movementX) >= Math.abs(diffX)) {
-        this.x = this.targetX;
-        this.targetX = null;
-      }
-      if (Math.abs(movementY) >= Math.abs(diffY)) {
-        this.y = this.targetY;
-        this.targetY = null;
-      }
-
-      this.updateBlocksPosition();
+      this.needsPositionUpdate = false
     }
   }
 }
@@ -600,7 +613,7 @@ class Animation {
 	  const elapsed = now - this.startTime;
 	  const progress = Math.min(elapsed / this.duration, 1);
 	  const value = this.from + (this.to - this.from) * progress;
-  
+    console.log("Updation value", value)
 	  this.onUpdate(value);
   
 	  if (progress === 1) {
