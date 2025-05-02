@@ -709,8 +709,13 @@ function checkBoardXs() {
 function clearAlongY(indexY) {
   let targetScore = 0;
   for (let indexX = 0; indexX < board.xLength; indexX++) {
+    let animationDelay = indexX * 25
     let block = board.grid[indexY][indexX]
-    block.startGrowFadeAnimations(() => removeFromLayer(block))
+
+    setTimeout(() => {
+      block.startGrowFadeAnimations(() => removeFromLayer(block))
+    }, animationDelay);
+
     board.grid[indexY][indexX] = null;
     targetScore++;
   }
@@ -719,8 +724,13 @@ function clearAlongY(indexY) {
 function clearAlongX(indexX) {
   let targetScore = 0;
   for (let indexY = 0; indexY < board.yLength; indexY++) {
+    let animationDelay = indexY * 25
     let block = board.grid[indexY][indexX]
-    block.startGrowFadeAnimations(() => removeFromLayer(block))
+
+    setTimeout(() => {
+      block.startGrowFadeAnimations(() => removeFromLayer(block))
+    }, animationDelay)
+    
     board.grid[indexY][indexX] = null;
     targetScore++;
   }
