@@ -234,8 +234,59 @@ class Block {
     this.width = board.blockWidth;
     this.img = null;
     this.globalAlpha = 1;
+
+	this.animations = []
   }
 
+  startGrowFadeAnimations(callback) {
+	const duration = 500
+	this.animations.push(
+		new Animation({
+			property: "width",
+			from: this.width,
+			to: this.width + 20,
+			duration,
+			onUpdate: (v) => this.width = v,
+			onComplete: () => checkAllDone()
+		}),
+		new Animation({
+			property: "x",
+			from: this.x,
+			to: this.x - 10,
+			duration,
+			onUpdate: (v) => this.x = v,
+			onComplete: () => checkAllDone()
+		}),
+		new Animation({
+			property: "y",
+			from: this.y,
+			to: this.y - 10,
+			duration,
+			onUpdate: (v) => this.y = v,
+			onComplete: () => checkAllDone()
+		}),
+		new Animation({
+			property: "globalAlpha",
+			from: this.globalAlpha,
+			to: 0,
+			duration,
+			onUpdate: (v) => this.globalAlpha = v,
+			onComplete: () => checkAllDone()
+		})
+	)
+
+	let done = 0;
+	const checkAllDone = () => {
+		if (++done === 2 && callback) callback()
+	}
+  }
+
+  update(now) {
+	this.animations = this.animations.filter(animation => {
+		animation.update(now)
+		return !animation.finished
+	})
+  }
   draw(x, y) {
     x = x || this.x;
     y = y || this.y;
@@ -453,6 +504,8 @@ class Piece {
           let by = indexY + y;
           board.grid[by][bx] = block;
           changeLayer(block, ZINDEX.BOARD_ITEMS);
+
+		  block.startGrowFadeAnimations()
         }
       }
     }
@@ -687,13 +740,13 @@ function checkLost() {
   alert("You've lost! Refresh the page to play again.");
 }
 
-function update() {
+function update(now) {
   requestAnimationFrame(update);
 
-  pointer.update();
+  pointer.update(now);
 
   for (let layer of layers)
-    if (layer) for (let item of layer) if (item.update) item.update();
+    if (layer) for (let item of layer) if (item.update) item.update(now);
 
   render();
 }
