@@ -265,11 +265,7 @@ class Piece {
 		this.x = null;
 		this.y = null;
 		this.blocks = []
-		this.shadow = []
-		this.shadowIndexX = null;
-		this.shadowIndexY = null;
 		this.isBeingDragged = false;
-		this.isShadowVisible = false;
 		this.targetX = null
 		this.targetY = null
 
@@ -335,13 +331,12 @@ class Piece {
 			[1],
 		]
 	]
-	
+
 	static rotatePattern(pattern) {
 
 		// Get the number of rows and columns at pattern
 		const rows = pattern.length;
 		const cols = pattern[0].length;
-
 		const rotatedPattern = [];
 
 		// Determine the dimensions of the rotated pattern based on the original pattern
@@ -364,28 +359,20 @@ class Piece {
 	createGrid(pattern, img) {
 		for (let y in pattern) {
 			this.blocks[y] = []
-			this.shadow[y] = []
 			for (let x in pattern[y]) {
-				//console.log(pattern.length, pattern[y].length)
-				//console.log(y, x, pattern)
 				if (pattern[y][x] === 1) {
 					this.blocks[y][x] = new Block()
 					this.blocks[y][x].img = img
 					this.blocks[y][x].globalAlpha = 1
 					this.blocks[y][x].zIndex = ZINDEX.PIECES
 					addToLayer(this.blocks[y][x])
-
-					this.shadow[y][x] = new Block()
-					this.shadow[y][x].img = img
-					this.shadow[y][x].globalAlpha = .5
-					this.shadow[y][x].zIndex = ZINDEX.BOARD_ITEMS
 				} else {
 					this.blocks[y][x] = null;
-					this.shadow[y][x] = null;
 				}
 			}
 		}
 	}
+
 	checkFit(desY, desX) {
 		/* Check if board.grid has space to fit this piece in the given indexes. */
 		/* desX => destination index in which the piece would be placed */
@@ -411,6 +398,7 @@ class Piece {
 
 		return true
 	}
+
 	updateBlocksPosition() {
 		for (let y in this.blocks) {
 			for (let x in this.blocks[y]) {
@@ -424,67 +412,9 @@ class Piece {
 			}
 		}
 	}
-	updateShadowPosition() {
-		let pieceX = this.x;
-		let pieceY = this.y;
-		// The position of the piece relative to the board
-		let relX = pieceX - board.x;
-		let relY = pieceY - board.y;
 
-		// The distance between the corner of the piece
-		// and the corner of the previous grid space
-		let remainingX = relX % board.blockWidth;
-		let remainingY = relY % board.blockWidth;
-		// Position the shadow on the corner of the
-		// previous grid space
-		let shadowX = pieceX - remainingX;
-		let shadowY = pieceY - remainingY;
-		// Check if the piece is actually
-		// closer to the next grid space
-		let halfBlock = board.blockWidth / 2;
-		if (remainingX > halfBlock) shadowX += board.blockWidth;
-		if (remainingY > halfBlock) shadowY += board.blockWidth;
-
-		// Prevent the shadow the be shown outside of the board
-		let isToTheLeft = shadowX < board.x
-		let isToTheRight = shadowX > board.x + board.width - this.width
-		let isOverTheTop = shadowY < board.y
-		let isUnderTheBottom = shadowY > board.y + board.height - this.height
-		if (isToTheLeft || isToTheRight || isOverTheTop || isUnderTheBottom)
-			return this.isShadowVisible = false;
-
-		this.shadowIndexX = (shadowX - board.x) / board.blockWidth;
-		this.shadowIndexY = (shadowY - board.y) / board.blockWidth;
-
-		let fit = this.checkFit(this.shadowIndexY, this.shadowIndexX)
-		if (fit) {
-			for (let y in this.shadow) {
-				for (let x in this.shadow[y]) {
-					if (!this.shadow[y][x]) continue;
-					let blockOffsetX = x * board.blockWidth
-					let blockOffsetY = y * board.blockWidth
-
-					this.shadow[y][x].x = shadowX + blockOffsetX
-					this.shadow[y][x].y = shadowY + blockOffsetY
-					addToLayer(this.shadow[y][x])
-				}
-			}
-		} else {
-			for (let y in this.shadow) {
-				for (let x in this.shadow[y]) {
-					if (!this.shadow[y][x]) continue;
-					removeFromLayer(this.shadow[y][x])
-				}
-			}
-		}
-
-		this.isShadowVisible = fit
-	}
 	isPointInside(x, y) {
-		let point = {
-			x,
-			y
-		};
+		let point = { x, y };
 		let blocks = this.blocks;
 
 		for (let x = 0; x < blocks.length; x++) {
@@ -496,12 +426,18 @@ class Piece {
 			}
 		}
 		return false;
-
 	}
+
 	placeOnBoard() {
-		// Align this piece and its blocks on the board grid
-		this.x = this.shadowIndexX * board.blockWidth + board.x;
-		this.y = this.shadowIndexY * board.blockWidth + board.y;
+		// Compute index position
+		let relX = this.x - board.x
+		let relY = this.y - board.y
+		let indexX = Math.round(relX / board.blockWidth)
+		let indexY = Math.round(relY / board.blockWidth)
+
+		// Align this piece on the board grid
+		this.x = indexX * board.blockWidth + board.x;
+		this.y = indexY * board.blockWidth + board.y;
 		this.updateBlocksPosition();
 
 		// Put each block of piece in the board
@@ -509,9 +445,9 @@ class Piece {
 			for (let x in this.blocks[y]) {
 				let block = this.blocks[y][x]
 				if (block) {
-					let indexX = this.shadowIndexX + Number(x)
-					let indexY = this.shadowIndexY + Number(y)
-					board.grid[indexY][indexX] = block
+					let bx = indexX + Number(x)
+					let by = indexY + Number(y)
+					board.grid[by][bx] = block
 					changeLayer(block, ZINDEX.BOARD_ITEMS)
 				}
 			}
@@ -525,8 +461,14 @@ class Piece {
 			}
 		}
 	}
+
 	onDrop() {
-		if (this.isShadowVisible) {
+		let relX = this.x - board.x
+		let relY = this.y - board.y
+		let indexX = Math.round(relX / board.blockWidth)
+		let indexY = Math.round(relY / board.blockWidth)
+
+		if (this.checkFit(indexY, indexX)) {
 			this.placeOnBoard()
 			showNewPiece()
 
@@ -543,17 +485,16 @@ class Piece {
 			// Prepare an animation to get back to tray
 			for (let space of blocksTray.spaces) {
 				if (space.content != this) continue;
-
 				let position = blocksTray.contentPositionAsInCenter(space)
 				this.targetX = position.x
 				this.targetY = position.y
 			}
 		}
 	}
+
 	update() {
 		if (this.isBeingDragged) {
 			this.updateBlocksPosition();
-			this.updateShadowPosition();
 		} else if (this.targetX || this.targetY) {
 			let diffX = this.targetX - this.x
 			let diffY = this.targetY - this.y
@@ -584,7 +525,6 @@ class Piece {
 		}
 	}
 }
-
 canvas.addEventListener("pointerdown", function (ev) {
 	ev.preventDefault();
 
