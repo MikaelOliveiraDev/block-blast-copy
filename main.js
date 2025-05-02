@@ -504,8 +504,6 @@ class Piece {
           let by = indexY + y;
           board.grid[by][bx] = block;
           changeLayer(block, ZINDEX.BOARD_ITEMS);
-
-          block.startGrowFadeAnimations();
         }
       }
     }
@@ -611,7 +609,6 @@ class Animation {
     const elapsed = now - this.startTime;
     const progress = Math.min(elapsed / this.duration, 1);
     const value = this.from + (this.to - this.from) * progress;
-    console.log("Updation value", value);
     this.onUpdate(value);
 
     if (progress === 1) {
@@ -712,7 +709,8 @@ function checkBoardXs() {
 function clearAlongY(indexY) {
   let targetScore = 0;
   for (let indexX = 0; indexX < board.xLength; indexX++) {
-    removeFromLayer(board.grid[indexY][indexX]);
+    let block = board.grid[indexY][indexX]
+    block.startGrowFadeAnimations(() => removeFromLayer(block))
     board.grid[indexY][indexX] = null;
     targetScore++;
   }
@@ -721,7 +719,8 @@ function clearAlongY(indexY) {
 function clearAlongX(indexX) {
   let targetScore = 0;
   for (let indexY = 0; indexY < board.yLength; indexY++) {
-    removeFromLayer(board.grid[indexY][indexX]);
+    let block = board.grid[indexY][indexX]
+    block.startGrowFadeAnimations(() => removeFromLayer(block))
     board.grid[indexY][indexX] = null;
     targetScore++;
   }
