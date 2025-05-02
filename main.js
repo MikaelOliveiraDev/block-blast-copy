@@ -235,57 +235,57 @@ class Block {
     this.img = null;
     this.globalAlpha = 1;
 
-	this.animations = []
+    this.animations = [];
   }
 
   startGrowFadeAnimations(callback) {
-	const duration = 500
-	this.animations.push(
-		new Animation({
-			property: "width",
-			from: this.width,
-			to: this.width + 20,
-			duration,
-			onUpdate: (v) => this.width = v,
-			onComplete: () => checkAllDone()
-		}),
-		new Animation({
-			property: "x",
-			from: this.x,
-			to: this.x - 10,
-			duration,
-			onUpdate: (v) => this.x = v,
-			onComplete: () => checkAllDone()
-		}),
-		new Animation({
-			property: "y",
-			from: this.y,
-			to: this.y - 10,
-			duration,
-			onUpdate: (v) => this.y = v,
-			onComplete: () => checkAllDone()
-		}),
-		new Animation({
-			property: "globalAlpha",
-			from: this.globalAlpha,
-			to: 0,
-			duration,
-			onUpdate: (v) => this.globalAlpha = v,
-			onComplete: () => checkAllDone()
-		})
-	)
+    const duration = 500;
+    this.animations.push(
+      new Animation({
+        property: "width",
+        from: this.width,
+        to: this.width + 20,
+        duration,
+        onUpdate: (v) => (this.width = v),
+        onComplete: () => checkAllDone(),
+      }),
+      new Animation({
+        property: "x",
+        from: this.x,
+        to: this.x - 10,
+        duration,
+        onUpdate: (v) => (this.x = v),
+        onComplete: () => checkAllDone(),
+      }),
+      new Animation({
+        property: "y",
+        from: this.y,
+        to: this.y - 10,
+        duration,
+        onUpdate: (v) => (this.y = v),
+        onComplete: () => checkAllDone(),
+      }),
+      new Animation({
+        property: "globalAlpha",
+        from: this.globalAlpha,
+        to: 0,
+        duration,
+        onUpdate: (v) => (this.globalAlpha = v),
+        onComplete: () => checkAllDone(),
+      })
+    );
 
-	let done = 0;
-	const checkAllDone = () => {
-		if (++done === 2 && callback) callback()
-	}
+    let done = 0;
+    const checkAllDone = () => {
+      if (++done === 2 && callback) callback();
+    };
   }
 
   update(now) {
-	this.animations = this.animations.filter(animation => {
-		animation.update(now)
-		return !animation.finished
-	})
+    this.animations = this.animations.filter((animation) => {
+      animation.update(now);
+      return !animation.finished;
+    });
   }
   draw(x, y) {
     x = x || this.x;
@@ -312,7 +312,7 @@ class Piece {
     this.blocks = [];
     this.isBeingDragged = false;
     this.needsPositionUpdate = false;
-    this.animations = []
+    this.animations = [];
 
     // Select a random pattern
     let index = Math.floor(Math.random() * Piece.patterns.length);
@@ -505,7 +505,7 @@ class Piece {
           board.grid[by][bx] = block;
           changeLayer(block, ZINDEX.BOARD_ITEMS);
 
-		  block.startGrowFadeAnimations()
+          block.startGrowFadeAnimations();
         }
       }
     }
@@ -537,17 +537,16 @@ class Piece {
       for (let indexX of filledXs) clearAlongX(indexX);
       checkLost();
     } else {
-      this.startGoBackAnimation()
+      this.startGoBackAnimation();
     }
   }
 
   startGoBackAnimation(callback) {
-    let space = null
-    for (space of blocksTray.spaces) 
-      if (space.content === this) break
+    let space = null;
+    for (space of blocksTray.spaces) if (space.content === this) break;
 
-    if (!space) console.error("Piece is not positioned in blocksTray")
-    
+    if (!space) console.error("Piece is not positioned in blocksTray");
+
     const target = blocksTray.contentPositionAsInCenter(space);
     const SPEED_PIXELS_PER_FRAME = 4;
     const dx = target.x - this.x;
@@ -555,10 +554,10 @@ class Piece {
     const distance = Math.sqrt(dx * dx + dy * dy);
     const duration = Math.ceil(distance / SPEED_PIXELS_PER_FRAME);
 
-    let complete = 0
+    let complete = 0;
     const checkAllComplete = () => {
-      if (++complete === 2 && callback) callback()
-    }
+      if (++complete === 2 && callback) callback();
+    };
 
     this.animations.push(
       new Animation({
@@ -566,63 +565,61 @@ class Piece {
         from: this.x,
         to: target.x,
         duration,
-        onUpdate: (x) => this.x = x,
-        onComplete: checkAllComplete
+        onUpdate: (x) => (this.x = x),
+        onComplete: checkAllComplete,
       }),
       new Animation({
         property: "y",
         from: this.y,
         to: target.y,
         duration,
-        onUpdate: (y) => this.y = y,
-        onComplete: checkAllComplete
+        onUpdate: (y) => (this.y = y),
+        onComplete: checkAllComplete,
       })
-    )
+    );
   }
   update(now) {
-    
-    this.animations = this.animations.filter(animation => {
-      animation.update(now)
-      this.needsPositionUpdate = true
-      return !animation.finished
-    })
+    this.animations = this.animations.filter((animation) => {
+      animation.update(now);
+      this.needsPositionUpdate = true;
+      return !animation.finished;
+    });
 
     if (this.isBeingDragged || this.needsPositionUpdate) {
       this.updateBlocksPosition();
-      this.needsPositionUpdate = false
+      this.needsPositionUpdate = false;
     }
   }
 }
 class Animation {
-	constructor({ property, from, to, duration, onUpdate, onComplete }) {
-	  this.property = property;
-	  this.from = from;
-	  this.to = to;
-	  this.duration = duration;
-	  this.onUpdate = onUpdate;
-	  this.onComplete = onComplete;
-	  this.startTime = null;
-	  this.finished = false;
-	}
-  
-	update(now) {
-	  if (this.finished) return;
-  
-	  if (this.startTime === null) this.startTime = now;
-  
-	  const elapsed = now - this.startTime;
-	  const progress = Math.min(elapsed / this.duration, 1);
-	  const value = this.from + (this.to - this.from) * progress;
-    console.log("Updation value", value)
-	  this.onUpdate(value);
-  
-	  if (progress === 1) {
-		this.finished = true;
-		this.onComplete?.();
-	  }
-	}
+  constructor({ property, from, to, duration, onUpdate, onComplete }) {
+    this.property = property;
+    this.from = from;
+    this.to = to;
+    this.duration = duration;
+    this.onUpdate = onUpdate;
+    this.onComplete = onComplete;
+    this.startTime = null;
+    this.finished = false;
   }
-  
+
+  update(now) {
+    if (this.finished) return;
+
+    if (this.startTime === null) this.startTime = now;
+
+    const elapsed = now - this.startTime;
+    const progress = Math.min(elapsed / this.duration, 1);
+    const value = this.from + (this.to - this.from) * progress;
+    console.log("Updation value", value);
+    this.onUpdate(value);
+
+    if (progress === 1) {
+      this.finished = true;
+      this.onComplete?.();
+    }
+  }
+}
 
 canvas.addEventListener("pointerdown", function (ev) {
   ev.preventDefault();
