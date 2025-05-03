@@ -142,6 +142,13 @@ function createGameScreen() {
     board.init()
     board.zIndex = ZINDEX.BACKGROUND
     addToLayer(board)
+
+    loadScript("./game/tray.js", () => {
+      tray.canvas = canvas
+      tray.init(board)
+      tray.zIndex = ZINDEX.BACKGROUND
+      addToLayer(tray)
+    })
   })
 }
 
