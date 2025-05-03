@@ -34,6 +34,36 @@ function changeLayer(item, zIndex) {
   item.zIndex = zIndex;
   addToLayer(item);
 }
+const pointer = {
+  x: null,
+  y: null,
+  hold: 0,
+  dragging: null,
+  dragOffsetX: 0,
+  dragOffsetY: 0,
+  update: function () {
+    if (this.hold) this.hold++;
+
+    if (this.dragging) {
+      this.dragging.x = this.x + this.dragOffsetX;
+      this.dragging.y = this.y + this.dragOffsetY;
+    }
+  },
+  drag: function (item) {
+    pointer.dragging = item;
+    pointer.dragging.isBeingDragged = true;
+
+    if (item instanceof Piece) {
+      pointer.dragOffsetX = -(item.width / 2);
+      pointer.dragOffsetY = -item.height - board.blockWidth;
+    }
+  },
+  drop: function () {
+    if (pointer.dragging.onDrop) pointer.dragging.onDrop();
+    pointer.dragging.isBeingDragged = false;
+    pointer.dragging = null;
+  },
+};
 
 canvas.height = 800;
 canvas.width = 450;
