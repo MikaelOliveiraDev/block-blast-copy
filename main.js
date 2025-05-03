@@ -202,6 +202,34 @@ function render() {
     for (let i = 0; i < layers[layer]?.length; i++)
       if (layers[layer][i].draw) layers[layer][i].draw(ctx);
 }
+class Animation {
+  constructor({ property, from, to, duration, onUpdate, onComplete }) {
+    this.property = property;
+    this.from = from;
+    this.to = to;
+    this.duration = duration;
+    this.onUpdate = onUpdate;
+    this.onComplete = onComplete;
+    this.startTime = null;
+    this.finished = false;
+  }
+
+  update(now) {
+    if (this.finished) return;
+
+    if (this.startTime === null) this.startTime = now;
+
+    const elapsed = now - this.startTime;
+    const progress = Math.min(elapsed / this.duration, 1);
+    const value = this.from + (this.to - this.from) * progress;
+    this.onUpdate(value);
+
+    if (progress === 1) {
+      this.finished = true;
+      this.onComplete?.();
+    }
+  }
+}
 
 canvas.addEventListener("click", (ev) => {
   const rect = canvas.getBoundingClientRect();
