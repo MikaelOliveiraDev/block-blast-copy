@@ -122,6 +122,14 @@ function createStartScreen() {
   addToLayer(startButton);
   addToLayer(gameTitle);
 }
+function createGameScreen() {
+  // Clear layers
+  for (let index = 0; index < layers.length; index++)
+    if(layers[index])
+      layers[index] = []
+
+  
+}
 
 function update(now) {
   for (let layer = 0; layer < layers.length; layer++)
@@ -155,6 +163,6 @@ canvas.addEventListener("click", (ev) => {
     mouseY >= y &&
     mouseY <= y + height
   ) {
-    console.log("START button clicked!");
+    createGameScreen()
   }
 });
