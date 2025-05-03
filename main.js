@@ -40,6 +40,14 @@ canvas.width = 450;
 createStartScreen();
 update();
 
+function loadScript(url) {
+  const script = document.createElement("script")
+ 
+  script.type = "text/javascript"
+  script.src = url
+  document.head.appendChild(script)
+}
+
 function createStartScreen() {
   // Start button
   const width = 160;
@@ -127,8 +135,8 @@ function createGameScreen() {
   for (let index = 0; index < layers.length; index++)
     if(layers[index])
       layers[index] = []
-
   
+  loadScript("./game/board.js")
 }
 
 function update(now) {
