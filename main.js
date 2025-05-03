@@ -1,39 +1,51 @@
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
-const ZINDEX = {
-  BACKGROUND: 0,
-  BOARD_ITEMS: 1,
-  PIECES: 2,
-  UI: 3,
-};
-const layers = [];
-function addToLayer(item) {
-  let zIndex = item.zIndex;
 
-  if (!layers[zIndex]) layers[zIndex] = [];
-
-  layers[zIndex].push(item);
-}
-function removeFromLayer(item) {
-  let zIndex = item.zIndex;
-  let layer = layers[zIndex];
-  if (!layer) {
-    console.log(`Camada ${zIndex} não existe!`);
-    return;
-  }
-  for (let i = 0; i < layer.length; i++) {
-    if (layer[i] === item) {
-      layer.splice(i, 1);
+const LayerManager = {
+  layers: [],
+  ZINDEX: {
+    BACKGROUND: 0,
+    BOARD_ITEMS: 1,
+    PIECES: 2,
+    UI: 3,
+  },
+  
+  add(item) {
+    const z = item.zIndex;
+    if (!this.layers[z]) this.layers[z] = [];
+    this.layers[z].push(item);
+  },
+ remove(item) {
+    const z = item.zIndex;
+    const layer = this.layers[z];
+    if (!layer) {
+      console.log(`Camada ${z} não existe!`);
       return;
     }
+    const index = layer.indexOf(item);
+    if (index !== -1) {
+      layer.splice(index, 1);
+    }
+  },
+  change(item, newZIndex) {
+    this.remove(item);
+    item.zIndex = newZIndex;
+    this.add(item);
+  },
+  forEach(callback) {
+    for (let layer of this.layers)
+      if (layer)
+        for (let item of layer)
+          callback(item);
+  },
+  clear() {
+    for (let index = 0; index < this.layers.length; index++)
+      if(this.layers[index])
+        this.layers[index] = []
   }
-}
-function changeLayer(item, zIndex) {
-  removeFromLayer(item);
-  item.zIndex = zIndex;
-  addToLayer(item);
-}
+};
+
 const pointer = {
   x: null,
   y: null,
@@ -51,11 +63,10 @@ const pointer = {
   },
   checkDown: function() {
     console.log("checkdown")
-    for (let layer of layers)
-      if (layer)
-        for(let item of layer)
-          if(item.isPontInside && item.isPontInside(pointer.x, pointer.y))
-              pointer.drag()
+    LayerManager.forEach((item) => {
+      if(item.isPontInside && item.isPontInside(pointer.x, pointer.y))
+          pointer.drag()
+    })
   },
   drag: function (item) {
     pointer.dragging = item;
@@ -76,7 +87,6 @@ const pointer = {
 canvas.height = 800;
 canvas.width = 450;
 createStartScreen();
-setTimeout(createGameScreen, 500)
 update();
 
 function loadScript(url, callback) {
@@ -97,7 +107,7 @@ function createStartScreen() {
   const hue = 45;
   const saturation = 100;
   const startButton = {
-    zIndex: ZINDEX.UI,
+    zIndex: LayerManager.ZINDEX.UI,
     draw: (ctx) => {
       // The square
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 55%)`;
@@ -157,7 +167,7 @@ function createStartScreen() {
   const gameTitle = {};
   gradient.addColorStop(0.2, "white");
   gradient.addColorStop(0.9, "gold");
-  gameTitle.zIndex = ZINDEX.UI;
+  gameTitle.zIndex = LayerManager.ZINDEX.UI;
   gameTitle.draw = (ctx) => {
     ctx.fillStyle = gradient;
     ctx.font = "bold italic 50px Verdana";
@@ -166,24 +176,22 @@ function createStartScreen() {
     ctx.fillText(text, canvas.width / 2, canvas.height / 2 - 50);
   };
 
-  addToLayer(startButton);
-  addToLayer(gameTitle);
+  LayerManager.add(startButton);
+  LayerManager.add(gameTitle);
 }
 function createGameScreen() {
   // Clear layers
-  for (let index = 0; index < layers.length; index++)
-    if(layers[index])
-      layers[index] = []
+  LayerManager.clear()
   
   loadScript("./game/board.js", () => {
     board.canvas = canvas
-    board.zIndex = ZINDEX.BACKGROUND
-    addToLayer(board)
+    board.zIndex = LayerManager.ZINDEX.BACKGROUND
+    LayerManager.add(board)
 
     loadScript("./game/tray.js", () => {
       tray.canvas = canvas
-      tray.zIndex = ZINDEX.BACKGROUND
-      addToLayer(tray)
+      tray.zIndex = LayerManager.ZINDEX.BACKGROUND
+      LayerManager.add(tray)
 
       loadScript("./game/block.js", () => {
         loadScript("./game/piece.js", startGame)
@@ -210,18 +218,19 @@ function startGame() {
       space.content = piece;
       tray.centralizeContent(space);
       piece.updateBlocksPosition();
-      piece.zIndex = ZINDEX.PIECES;
+      piece.zIndex = LayerManager.ZINDEX.PIECES;
   
-      addToLayer(piece);
+      LayerManager.add(piece);
       break;
     }
   }
 }
 
 function update(now) {
-  for (let layer = 0; layer < layers.length; layer++)
-    for (let i = 0; i < layers[layer]?.length; i++)
-      if (layers[layer][i].update) layers[layer][i].update();
+  LayerManager.forEach((item) => {
+    if (item.update)
+      item.update();
+  })
   
   render();
   requestAnimationFrame(update);
@@ -230,9 +239,10 @@ function render() {
   ctx.fillStyle = "#4f6875";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  for (let layer = 0; layer < layers.length; layer++)
-    for (let i = 0; i < layers[layer]?.length; i++)
-      if (layers[layer][i].draw) layers[layer][i].draw(ctx);
+  LayerManager.forEach((item) => {
+    if(item.draw)
+      item.draw(ctx)
+  })
 }
 class Animation {
   constructor({ property, from, to, duration, onUpdate, onComplete }) {
