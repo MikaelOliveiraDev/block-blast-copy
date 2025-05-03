@@ -169,21 +169,45 @@ function createGameScreen() {
   
   loadScript("./game/board.js", () => {
     board.canvas = canvas
-    board.init()
     board.zIndex = ZINDEX.BACKGROUND
     addToLayer(board)
 
     loadScript("./game/tray.js", () => {
       tray.canvas = canvas
-      tray.init(board)
       tray.zIndex = ZINDEX.BACKGROUND
       addToLayer(tray)
 
       loadScript("./game/block.js", () => {
-        loadScript("./game/piece.js")
+        loadScript("./game/piece.js", startGame)
       })
     })
   })
+}
+function startGame() {
+  board.init()
+  tray.init(board)
+
+  showNewPiece()
+  showNewPiece()
+
+  function showNewPiece() {
+    let spaces = tray.spaces;
+  
+    // Try to find an empty space in the blocks tray
+    for (let space of spaces) {
+      if (space.content) continue;
+  
+      // Config the piece
+      let piece = new Piece();
+      space.content = piece;
+      tray.centralizeContent(space);
+      piece.updateBlocksPosition();
+      piece.zIndex = ZINDEX.PIECES;
+  
+      addToLayer(piece);
+      break;
+    }
+  }
 }
 
 function update(now) {

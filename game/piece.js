@@ -14,7 +14,7 @@ class Piece {
     let rotations = Math.floor(Math.random() * 4);
     for (let i = 0; i < rotations; i++) pattern = Piece.rotatePattern(pattern);
     // Select an image
-    let imageID = Block.images[Math.floor(Math.random() * Block.images.length)];
+    let imageID = Math.floor(Math.random() * Block.images.length)
 
     this.createGrid(pattern, imageID);
     // Configure width and height
@@ -103,7 +103,7 @@ class Piece {
       for (let x in pattern[y]) {
         if (pattern[y][x] === 1) {
           this.blocks[y][x] = new Block();
-          this.blocks[y][x].imageID = imageID;
+          this.blocks[y][x].image = Block.images[imageID];
           this.blocks[y][x].globalAlpha = 1;
           this.blocks[y][x].zIndex = ZINDEX.PIECES;
           addToLayer(this.blocks[y][x]);

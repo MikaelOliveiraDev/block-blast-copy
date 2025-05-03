@@ -3,7 +3,7 @@ class Block {
     this.x = null;
     this.y = null;
     this.width = board.blockWidth;
-    this.imageID = null;
+    this.image = null;
     this.alpha = 1;
 
     this.animations = [];
@@ -65,7 +65,7 @@ class Block {
     });
   }
   draw(ctx, x, y) {
-    let img = Block.images[this.imageID]
+    let img = this.image
 
     x = x || this.x;
     y = y || this.y;
