@@ -62,10 +62,10 @@ const pointer = {
     }
   },
   checkDown: function() {
-    console.log("checkdown")
     LayerManager.forEach((item) => {
-      if(item.isPontInside && item.isPontInside(pointer.x, pointer.y))
-          pointer.drag()
+      console
+      if(item.isPointInside && item.isPointInside(pointer.x, pointer.y))
+        item.onPointerDown(pointer)
     })
   },
   drag: function (item) {
@@ -99,19 +99,27 @@ function loadScript(url, callback) {
 
 function createStartScreen() {
   // Start button
-  const width = 160;
-  const height = 60;
-  const x = canvas.width / 2 - width / 2;
-  const y = canvas.height / 2 - height / 2;
+  
   const border = 8;
   const hue = 45;
   const saturation = 100;
   const startButton = {
+    width: 160,
+    height: 60,
+    get x() {
+      return canvas.width / 2 - this.width / 2;
+    },
+    get y() {
+      return canvas.height / 2 - this.height / 2;
+    },
     zIndex: LayerManager.ZINDEX.UI,
-    draw: (ctx) => {
+    draw(ctx) {
+      const { x, y, width, height } = this;
+
       // The square
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 55%)`;
       ctx.fillRect(x, y, width, height);
+
       // Left border
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 62%)`;
       ctx.beginPath();
@@ -122,6 +130,7 @@ function createStartScreen() {
       ctx.lineTo(x, y + height);
       ctx.fill();
       ctx.closePath();
+
       // Top border
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 74%)`;
       ctx.beginPath();
@@ -132,6 +141,7 @@ function createStartScreen() {
       ctx.lineTo(x, y);
       ctx.fill();
       ctx.closePath();
+
       // Right border
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 48%)`;
       ctx.beginPath();
@@ -142,6 +152,7 @@ function createStartScreen() {
       ctx.lineTo(x + width, y);
       ctx.fill();
       ctx.closePath();
+
       // Bottom border
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 45%)`;
       ctx.beginPath();
@@ -157,9 +168,23 @@ function createStartScreen() {
       ctx.textBaseline = "middle";
       ctx.font = "bold italic 20px Verdana";
       ctx.fillStyle = "#664d00";
+      ctx.textAlign = "center";
       ctx.fillText("START", x + width / 2, y + height / 2);
     },
+    isPointInside(x, y) {
+      return (
+        x >= this.x &&
+        x <= this.x + this.width &&
+        y >= this.y &&
+        y <= this.y + this.height
+      );
+    },
+    onPointerDown(pointer) {
+      createGameScreen()
+    }
   };
+
+  
 
   // Game Title
   const text = "Block Blast";
