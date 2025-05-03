@@ -38,13 +38,14 @@ function changeLayer(item, zIndex) {
 canvas.height = 800;
 canvas.width = 450;
 createStartScreen();
+setTimeout(createGameScreen, 500)
 update();
 
-function loadScript(url) {
+function loadScript(url, callback) {
   const script = document.createElement("script")
- 
   script.type = "text/javascript"
   script.src = url
+  script.onload = callback
   document.head.appendChild(script)
 }
 
@@ -136,7 +137,12 @@ function createGameScreen() {
     if(layers[index])
       layers[index] = []
   
-  loadScript("./game/board.js")
+  loadScript("./game/board.js", () => {
+    board.canvas = canvas
+    board.init()
+    board.zIndex = ZINDEX.BACKGROUND
+    addToLayer(board)
+  })
 }
 
 function update(now) {

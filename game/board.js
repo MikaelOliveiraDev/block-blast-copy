@@ -1,1 +1,108 @@
-console.log("From board.js")
+const board = {
+  grid: [],
+  x: 10,
+  y: 100,
+  width: null,
+  height: null,
+  blockWidth: 38,
+  xLength: 10,
+  yLength: 10,
+  canvas: null,
+  init: function () {
+    // Define dimentions
+    this.width = this.blockWidth * this.xLength;
+    this.height = this.blockWidth * this.yLength;
+    // Define position
+    this.x = (this.canvas.width - this.width) / 2;
+
+    // Prepare the grid
+    for (let indexY = 0; indexY < this.yLength; indexY++) {
+      this.grid[indexY] = [];
+      for (let indexX = 0; indexX < this.xLength; indexX++) {
+        this.grid[indexY][indexX] = null;
+      }
+    }
+  },
+  checkBoardYs: function () {
+    // Check if some rows are filled
+
+    let filledYs = [];
+    for (let indexY in this.grid) {
+      let containsEmptyParts = false;
+
+      for (let indexX in this.grid[indexY]) {
+        if (this.grid[indexY][indexX]) continue;
+        else containsEmptyParts = true;
+        break;
+      }
+
+      if (!containsEmptyParts) filledYs.push(indexY);
+    }
+    return filledYs;
+  },
+  checkBoardXs: function () {
+    // Check if some columns are filled
+
+    let filledXs = [];
+    for (let indexX = 0; indexX < this.xLength; indexX++) {
+      let containsEmptyParts = false;
+
+      for (let indexY = 0; indexY < board.yLength; indexY++) {
+        if (this.grid[indexY][indexX]) continue;
+        else containsEmptyParts = true;
+
+        break;
+      }
+
+      if (!containsEmptyParts) filledXs.push(indexX);
+    }
+
+    return filledXs;
+  },
+  clearAlongY: function (indexY) {
+    let targetScore = 0;
+    for (let indexX = 0; indexX < this.xLength; indexX++) {
+      let animationDelay = indexX * 25;
+      let block = this.grid[indexY][indexX];
+
+      setTimeout(() => {
+        block.startGrowFadeAnimations(() => removeFromLayer(block));
+      }, animationDelay);
+
+      this.grid[indexY][indexX] = null;
+      targetScore++;
+    }
+    score.target += targetScore;
+  },
+  clearAlongX: function (indexX) {
+    let targetScore = 0;
+    for (let indexY = 0; indexY < this.yLength; indexY++) {
+      let animationDelay = indexY * 25;
+      let block = this.grid[indexY][indexX];
+
+      setTimeout(() => {
+        block.startGrowFadeAnimations(() => removeFromLayer(block));
+      }, animationDelay);
+
+      this.grid[indexY][indexX] = null;
+      targetScore++;
+    }
+    score.target += targetScore;
+  },
+  draw: function (ctx) {
+    const colors = ["#a3a3a3", "#949494"];
+
+    for (let indexY = 0; indexY < this.grid.length; indexY++) {
+		
+      for (let indexX = 0; indexX < this.grid[indexY].length; indexX++) {
+        let evenOdd = (indexY + indexX) % 2;
+        let color = colors[evenOdd];
+		let x = this.blockWidth * indexX + this.x;
+		let y = this.blockWidth * indexY + this.y;
+	
+		ctx.fillStyle = color;
+		ctx.fillRect(x, y, this.blockWidth, this.blockWidth);
+      }
+    }
+  },
+};
