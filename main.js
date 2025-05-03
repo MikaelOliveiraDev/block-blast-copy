@@ -49,6 +49,14 @@ const pointer = {
       this.dragging.y = this.y + this.dragOffsetY;
     }
   },
+  checkDown: function() {
+    console.log("checkdown")
+    for (let layer of layers)
+      if (layer)
+        for(let item of layer)
+          if(item.isPontInside && item.isPontInside(pointer.x, pointer.y))
+              pointer.drag()
+  },
   drag: function (item) {
     pointer.dragging = item;
     pointer.dragging.isBeingDragged = true;
@@ -255,21 +263,35 @@ class Animation {
   }
 }
 
-canvas.addEventListener("click", (ev) => {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = ev.clientX - rect.left;
-  const mouseY = ev.clientY - rect.top;
-  const width = 160;
-  const height = 60;
-  const x = canvas.width / 2 - width / 2;
-  const y = canvas.height / 2 - height / 2;
 
-  if (
-    mouseX >= x &&
-    mouseX <= x + width &&
-    mouseY >= y &&
-    mouseY <= y + height
-  ) {
-    createGameScreen()
-  }
-});
+canvas.addEventListener("pointerdown", (ev) => {
+  ev.preventDefault()
+  const rect = canvas.getBoundingClientRect()
+  
+  pointer.x = ev.clientX - rect.left;
+  pointer.y = ev.clientY - rect.top;
+  pointer.hold = 0
+
+  pointer.checkDown()
+})
+canvas.addEventListener("pointermove", (ev) => {
+  ev.preventDefault()
+
+  const rect = ev.target.getBoundingClientRect()
+  pointer.x = ev.clientX - rect.left;
+  pointer.y = ev.clientY - rect.top;
+})
+canvas.addEventListener("pointerup", (ev) => {
+  pointer.x = null;
+  pointer.y = null
+  pointer.hold = false
+  
+  if(pointer.dragging) pointer.drop()
+})
+canvas.addEventListener("pointerleave", (ev) => {
+  pointer.x = null;
+  pointer.y = null
+  pointer.hold = false
+  
+  if(pointer.dragging) pointer.drop()
+})
