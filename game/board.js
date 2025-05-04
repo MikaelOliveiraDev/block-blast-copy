@@ -5,8 +5,8 @@ const board = {
   width: null,
   height: null,
   blockWidth: 38,
-  xLength: 5,
-  yLength: 5,
+  xLength: 8,
+  yLength: 8,
   canvas: null,
   init: function () {
     // Define dimentions
@@ -96,16 +96,15 @@ const board = {
       let maxIndexX = this.xLength - piece.blocks[0].length;
   
       // Check if fit on any part of the board grid
-      for (let indexY in this.grid) {
-        for (let indexX in this.grid[indexY]) {
-          if (indexX > maxIndexX || indexY > maxIndexY) continue;
-          if (this.grid[indexY][indexX]) continue;
-  
-          let fit = piece.checkFit(indexY, indexX);
-  
-          if (fit) return;
+      for (let [y, row] of this.grid.entries()) {
+        if (y > maxIndexY) continue;
+        for (let [x, cell] of row.entries()) {
+          if (x > maxIndexX || cell) continue;
+      
+          if (piece.checkFit(y, x)) return;
         }
       }
+      
     }
   
     alert("You've lost! Refresh the page to play again.");

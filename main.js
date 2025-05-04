@@ -268,6 +268,7 @@ function render() {
       item.draw(ctx)
   })
 }
+
 class Animation {
   constructor({ property, from, to, duration, onUpdate, onComplete }) {
     this.property = property;
@@ -294,6 +295,40 @@ class Animation {
       this.finished = true;
       this.onComplete?.();
     }
+  }
+}
+class Sound {
+  constructor(url, clones) {
+    this.url = url
+
+    this._audios = []
+    this._playing = []
+
+    for (let i = 0; i < clones; i++) {
+      const audio = new Audio(url)
+      this._audios.push(audio)
+    }
+  }
+  play() {
+    if (this._audios.length === 0)
+      return console.warn("No clones avaliable")
+
+    const audio = this._audios.pop()
+
+    audio.addEventListener("ended", (ev) => {
+      let index = this._playing.indexOf(ev.target)
+      if(index != -1)
+        this._playing.splice(index, 1)
+      this._audios.push(ev.target)
+    }, { once: true})
+
+    audio.play()
+    .then(() => {
+      this._playing.push(audio)
+    }).catch(err => {
+      console.error("Could not play audio:", err)
+      this._audios.push(audio)
+    })
   }
 }
 
