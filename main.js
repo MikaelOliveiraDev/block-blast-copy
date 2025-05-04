@@ -63,7 +63,6 @@ const pointer = {
   },
   checkDown: function() {
     LayerManager.forEach((item) => {
-      console
       if(item.isPointInside && item.isPointInside(pointer.x, pointer.y) && item.onPointerDown)
         item.onPointerDown(pointer)
     })
@@ -254,7 +253,7 @@ function update(now) {
 
   LayerManager.forEach((item) => {
     if (item.update)
-      item.update();
+      item.update(now);
   })
   
   render();

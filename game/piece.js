@@ -236,16 +236,16 @@ class Piece {
   startGoBackAnimation(callback) {
     let space = null;
     for (space of tray.spaces) if (space.content === this) break;
-
+    
     if (!space) console.error("Piece is not positioned in tray");
-
+    
     const target = tray.contentPositionAsInCenter(space);
     const SPEED_PIXELS_PER_FRAME = 4;
     const dx = target.x - this.x;
     const dy = target.y - this.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     const duration = Math.ceil(distance / SPEED_PIXELS_PER_FRAME);
-
+    
     let complete = 0;
     const checkAllComplete = () => {
       if (++complete === 2 && callback) callback();
