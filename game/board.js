@@ -5,8 +5,8 @@ const board = {
   width: null,
   height: null,
   blockWidth: 38,
-  xLength: 10,
-  yLength: 10,
+  xLength: 5,
+  yLength: 5,
   canvas: null,
   init: function () {
     // Define dimentions
@@ -88,6 +88,27 @@ const board = {
       targetScore++;
     }
     //score.target += targetScore;
+  },
+  checkLost: function() {
+    for (let space of tray.spaces) {
+      let piece = space.content;
+      let maxIndexY = this.yLength - piece.blocks.length;
+      let maxIndexX = this.xLength - piece.blocks[0].length;
+  
+      // Check if fit on any part of the board grid
+      for (let indexY in this.grid) {
+        for (let indexX in this.grid[indexY]) {
+          if (indexX > maxIndexX || indexY > maxIndexY) continue;
+          if (this.grid[indexY][indexX]) continue;
+  
+          let fit = piece.checkFit(indexY, indexX);
+  
+          if (fit) return;
+        }
+      }
+    }
+  
+    alert("You've lost! Refresh the page to play again.");
   },
   draw: function (ctx) {
     const colors = ["#a3a3a3", "#949494"];

@@ -226,6 +226,7 @@ class Piece {
     if (this.checkFit(indexY, indexX)) {
       this.placeOnBoard();
       showNewPiece();
+      board.checkLost()
     } else {
       this.startGoBackAnimation();
     }
