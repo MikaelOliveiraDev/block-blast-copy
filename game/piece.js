@@ -1,11 +1,12 @@
 class Piece {
-  constructor() {
+  constructor(board) {
     this.x = null;
     this.y = null;
     this.blocks = [];
     this.isBeingDragged = false;
     this.needsPositionUpdate = false;
     this.animations = [];
+    this.blockWidth = board.blockWidth
 
     // Select a random pattern
     let index = Math.floor(Math.random() * Piece.patterns.length);
@@ -18,8 +19,8 @@ class Piece {
 
     this.createGrid(pattern, imageID);
     // Configure width and height
-    this.width = board.blockWidth * pattern[0].length;
-    this.height = board.blockWidth * pattern.length;
+    this.width = this.blockWidth * pattern[0].length;
+    this.height = this.blockWidth * pattern.length;
   }
 
   static patterns = [
@@ -105,8 +106,8 @@ class Piece {
           this.blocks[y][x] = new Block();
           this.blocks[y][x].image = Block.images[imageID];
           this.blocks[y][x].globalAlpha = 1;
-          this.blocks[y][x].zIndex = ZINDEX.PIECES;
-          addToLayer(this.blocks[y][x]);
+          this.blocks[y][x].zIndex = LayerManager.ZINDEX.PIECES;
+          LayerManager.add(this.blocks[y][x]);
         } else {
           this.blocks[y][x] = null;
         }
@@ -152,9 +153,9 @@ class Piece {
       for (let x in this.blocks[y]) {
         let block = this.blocks[y][x];
         if (block === null) continue;
-
-        let blockOffsetX = x * board.blockWidth;
-        let blockOffsetY = y * board.blockWidth;
+        
+        let blockOffsetX = x * this.blockWidth;
+        let blockOffsetY = y * this.blockWidth;
         block.x = this.x + blockOffsetX;
         block.y = this.y + blockOffsetY;
       }
@@ -180,12 +181,12 @@ class Piece {
     // Compute index position
     let relX = this.x - board.x;
     let relY = this.y - board.y;
-    let indexX = Math.round(relX / board.blockWidth);
-    let indexY = Math.round(relY / board.blockWidth);
+    let indexX = Math.round(relX / this.blockWidth);
+    let indexY = Math.round(relY / this.blockWidth);
 
     // Align this piece on the board grid
-    this.x = indexX * board.blockWidth + board.x;
-    this.y = indexY * board.blockWidth + board.y;
+    this.x = indexX * this.blockWidth + board.x;
+    this.y = indexY * this.blockWidth + board.y;
     this.updateBlocksPosition();
 
     // Put each block of piece in the board
@@ -196,14 +197,14 @@ class Piece {
           let bx = indexX + x;
           let by = indexY + y;
           board.grid[by][bx] = block;
-          changeLayer(block, ZINDEX.BOARD_ITEMS);
+          LayerManager.change(block, LayerManager.ZINDEX.BOARD_ITEMS);
         }
       }
     }
 
     // Remove this piece from screen and tray
-    removeFromLayer(this);
-    for (let space of blocksTray.spaces) {
+    LayerManager.remove(this);
+    for (let space of tray.spaces) {
       if (space.content == this) {
         space.content = null;
       }
@@ -213,8 +214,8 @@ class Piece {
   onDrop() {
     let relX = this.x - board.x;
     let relY = this.y - board.y;
-    let indexX = Math.round(relX / board.blockWidth);
-    let indexY = Math.round(relY / board.blockWidth);
+    let indexX = Math.round(relX / this.blockWidth);
+    let indexY = Math.round(relY / this.blockWidth);
 
     if (this.checkFit(indexY, indexX)) {
       this.placeOnBoard();
@@ -234,11 +235,11 @@ class Piece {
 
   startGoBackAnimation(callback) {
     let space = null;
-    for (space of blocksTray.spaces) if (space.content === this) break;
+    for (space of tray.spaces) if (space.content === this) break;
 
-    if (!space) console.error("Piece is not positioned in blocksTray");
+    if (!space) console.error("Piece is not positioned in tray");
 
-    const target = blocksTray.contentPositionAsInCenter(space);
+    const target = tray.contentPositionAsInCenter(space);
     const SPEED_PIXELS_PER_FRAME = 4;
     const dx = target.x - this.x;
     const dy = target.y - this.y;

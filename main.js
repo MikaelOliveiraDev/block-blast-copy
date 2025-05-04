@@ -64,13 +64,13 @@ const pointer = {
   checkDown: function() {
     LayerManager.forEach((item) => {
       console
-      if(item.isPointInside && item.isPointInside(pointer.x, pointer.y))
+      if(item.isPointInside && item.isPointInside(pointer.x, pointer.y) && item.onPointerDown)
         item.onPointerDown(pointer)
     })
   },
   drag: function (item) {
-    pointer.dragging = item;
-    pointer.dragging.isBeingDragged = true;
+    this.dragging = item;
+    this.dragging.isBeingDragged = true;
 
     if (item instanceof Piece) {
       pointer.dragOffsetX = -(item.width / 2);
@@ -182,9 +182,7 @@ function createStartScreen() {
     onPointerDown(pointer) {
       createGameScreen()
     }
-  };
-
-  
+  }; 
 
   // Game Title
   const text = "Block Blast";
@@ -231,27 +229,29 @@ function startGame() {
   showNewPiece()
   showNewPiece()
 
-  function showNewPiece() {
-    let spaces = tray.spaces;
-  
-    // Try to find an empty space in the blocks tray
-    for (let space of spaces) {
-      if (space.content) continue;
-  
-      // Config the piece
-      let piece = new Piece();
-      space.content = piece;
-      tray.centralizeContent(space);
-      piece.updateBlocksPosition();
-      piece.zIndex = LayerManager.ZINDEX.PIECES;
-  
-      LayerManager.add(piece);
-      break;
-    }
+}
+function showNewPiece() {
+  let spaces = tray.spaces;
+
+  // Try to find an empty space in the blocks tray
+  for (let space of spaces) {
+    if (space.content) continue;
+
+    // Config the piece
+    let piece = new Piece(board);
+    space.content = piece;
+    tray.centralizeContent(space);
+    piece.updateBlocksPosition();
+    piece.zIndex = LayerManager.ZINDEX.PIECES;
+
+    LayerManager.add(piece);
+    break;
   }
 }
 
 function update(now) {
+  pointer.update(now)
+
   LayerManager.forEach((item) => {
     if (item.update)
       item.update();

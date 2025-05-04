@@ -62,6 +62,10 @@ const tray = {
 
     return false;
   },
+  onPointerDown: function(pointer) {
+    let space = this.isPointInside(pointer.x, pointer.y)
+    pointer.drag(space.content)
+  },
   draw: function (ctx) {
     ctx.fillStyle = "#9e9e9e39";
     ctx.fillRect(
