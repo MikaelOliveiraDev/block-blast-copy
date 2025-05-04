@@ -16,12 +16,14 @@ class Block {
   })
 
   startGrowFadeAnimations(callback) {
+    const grow = 10
     const duration = 500;
+
     this.animations.push(
       new Animation({
         property: "width",
         from: this.width,
-        to: this.width + 20,
+        to: this.width + grow,
         duration,
         onUpdate: (v) => (this.width = v),
         onComplete: () => checkAllDone(),
@@ -29,7 +31,7 @@ class Block {
       new Animation({
         property: "x",
         from: this.x,
-        to: this.x - 10,
+        to: this.x - grow / 2,
         duration,
         onUpdate: (v) => (this.x = v),
         onComplete: () => checkAllDone(),
@@ -37,7 +39,7 @@ class Block {
       new Animation({
         property: "y",
         from: this.y,
-        to: this.y - 10,
+        to: this.y - grow / 2,
         duration,
         onUpdate: (v) => (this.y = v),
         onComplete: () => checkAllDone(),
@@ -70,9 +72,9 @@ class Block {
     x = x || this.x;
     y = y || this.y;
     
-    ctx.alpha = this.alpha;
+    ctx.globalAlpha = this.alpha;
     ctx.drawImage(img, x, y, this.width, this.width);
-    ctx.alpha = 1;
+    ctx.globalAlpha = 1;
   }
   isPointInside(x, y) {
     let top = this.y;

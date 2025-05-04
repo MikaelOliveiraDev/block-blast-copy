@@ -62,32 +62,32 @@ const board = {
   clearAlongY: function (indexY) {
     let targetScore = 0;
     for (let indexX = 0; indexX < this.xLength; indexX++) {
-      let animationDelay = indexX * 25;
+      let animationDelay = indexX * 30;
       let block = this.grid[indexY][indexX];
 
       setTimeout(() => {
-        block.startGrowFadeAnimations(() => removeFromLayer(block));
+        block.startGrowFadeAnimations(() => LayerManager.remove(block));
       }, animationDelay);
 
       this.grid[indexY][indexX] = null;
       targetScore++;
     }
-    score.target += targetScore;
+    //score.target += targetScore;
   },
   clearAlongX: function (indexX) {
     let targetScore = 0;
     for (let indexY = 0; indexY < this.yLength; indexY++) {
-      let animationDelay = indexY * 25;
+      let animationDelay = indexY * 30;
       let block = this.grid[indexY][indexX];
 
       setTimeout(() => {
-        block.startGrowFadeAnimations(() => removeFromLayer(block));
+        block.startGrowFadeAnimations(() => LayerManager.remove(block));
       }, animationDelay);
 
       this.grid[indexY][indexX] = null;
       targetScore++;
     }
-    score.target += targetScore;
+    //score.target += targetScore;
   },
   draw: function (ctx) {
     const colors = ["#a3a3a3", "#949494"];
