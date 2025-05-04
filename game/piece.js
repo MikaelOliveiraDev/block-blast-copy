@@ -201,6 +201,12 @@ class Piece {
         }
       }
     }
+    // Get row & columns that got filled
+    let filledYs = board.checkBoardYs();
+    let filledXs = board.checkBoardXs();
+    // Clear them (if there are any)
+    for (let indexY of filledYs) board.clearAlongY(indexY);
+    for (let indexX of filledXs) board.clearAlongX(indexX);
 
     // Remove this piece from screen and tray
     LayerManager.remove(this);
@@ -220,14 +226,6 @@ class Piece {
     if (this.checkFit(indexY, indexX)) {
       this.placeOnBoard();
       showNewPiece();
-
-      // Get row & columns that got filled
-      let filledYs = checkBoardYs();
-      let filledXs = checkBoardXs();
-      // Clear them (if there are any)
-      for (let indexY of filledYs) clearAlongY(indexY);
-      for (let indexX of filledXs) clearAlongX(indexX);
-      checkLost();
     } else {
       this.startGoBackAnimation();
     }
