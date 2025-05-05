@@ -74,6 +74,8 @@ class Piece {
     ],
     [[1]],
   ];
+  static dragSound = new Sound("./assets/drag-block.aac", 7)
+  static dropSound = new Sound("./assets/drop-block.aac", 7)
 
   static rotatePattern(pattern) {
     // Get the number of rows and columns at pattern
@@ -217,6 +219,9 @@ class Piece {
     }
   }
 
+  onDrag() {
+    Piece.dragSound.play()
+  }
   onDrop() {
     let relX = this.x - board.x;
     let relY = this.y - board.y;
@@ -224,6 +229,7 @@ class Piece {
     let indexY = Math.round(relY / this.blockWidth);
 
     if (this.checkFit(indexY, indexX)) {
+      Piece.dropSound.play()
       this.placeOnBoard();
       showNewPiece();
       board.checkLost()

@@ -71,6 +71,7 @@ const pointer = {
     this.dragging = item;
     this.dragging.isBeingDragged = true;
 
+    if (item.onDrag) item.onDrag()
     if (item instanceof Piece) {
       pointer.dragOffsetX = -(item.width / 2);
       pointer.dragOffsetY = -item.height - board.blockWidth;
