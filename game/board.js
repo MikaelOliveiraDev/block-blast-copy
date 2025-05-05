@@ -72,6 +72,8 @@ const board = {
       this.grid[indexY][indexX] = null;
       targetScore++;
     }
+    combo.play()
+    combo.increase()
     //score.target += targetScore;
   },
   clearAlongX: function (indexX) {
@@ -87,6 +89,8 @@ const board = {
       this.grid[indexY][indexX] = null;
       targetScore++;
     }
+    combo.play()
+    combo.increase()
     //score.target += targetScore;
   },
   checkLost: function() {

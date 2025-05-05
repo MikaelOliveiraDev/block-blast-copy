@@ -217,7 +217,9 @@ function createGameScreen() {
       LayerManager.add(tray)
 
       loadScript("./game/block.js", () => {
-        loadScript("./game/piece.js", startGame)
+        loadScript("./game/piece.js", () => {
+          loadScript("./game/combo.js", startGame)
+        })
       })
     })
   })
