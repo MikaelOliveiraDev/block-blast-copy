@@ -242,7 +242,7 @@ function startGame() {
 
   showNewPiece()
   showNewPiece()
-
+  showNewPiece()
 }
 function showNewPiece() {
   let spaces = trayspaces;

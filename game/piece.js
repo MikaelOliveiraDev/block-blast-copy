@@ -212,7 +212,7 @@ class Piece {
 
     // Remove this piece from screen and tray
     LayerManager.remove(this);
-    for (let space of tray.spaces) {
+    for (let space of trayspaces) {
       if (space.content == this) {
         space.content = null;
       }
@@ -240,11 +240,13 @@ class Piece {
 
   startGoBackAnimation(callback) {
     let space = null;
-    for (space of tray.spaces) if (space.content === this) break;
+    for (space of trayspaces)
+      if (space.content === this) 
+        break;
     
     if (!space) console.error("Piece is not positioned in tray");
     
-    const target = tray.contentPositionAsInCenter(space);
+    const target = space.positionAsInCenter();
     const SPEED_PIXELS_PER_FRAME = 4;
     const dx = target.x - this.x;
     const dy = target.y - this.y;
