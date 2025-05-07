@@ -212,10 +212,6 @@ function createGameScreen() {
     LayerManager.add(board)
 
     loadScript("./game/tray.js", () => {
-      tray.canvas = canvas
-      tray.zIndex = LayerManager.ZINDEX.BACKGROUND
-      LayerManager.add(tray)
-
       loadScript("./game/block.js", () => {
         loadScript("./game/piece.js", () => {
           loadScript("./game/combo.js", startGame)
@@ -223,17 +219,33 @@ function createGameScreen() {
       })
     })
   })
+
+  
 }
 function startGame() {
   board.init()
-  tray.init(board)
+
+  window.trayspaces = []
+
+  const numberOfTrays = 3
+  const width = canvas.width / numberOfTrays
+  const gap = 5
+  const marginTop = 15
+  const y = board.y + board.height + marginTop
+  for (let i = 0; i < numberOfTrays; i++) {
+    const x = width * i + gap
+    const tray = new TraySpace(x, y, width - 2*gap, width - 2*gap)
+    tray.zIndex = LayerManager.ZINDEX.BACKGROUND
+    LayerManager.add(tray)
+    trayspaces.push(tray)
+  }
 
   showNewPiece()
   showNewPiece()
 
 }
 function showNewPiece() {
-  let spaces = tray.spaces;
+  let spaces = trayspaces;
 
   // Try to find an empty space in the blocks tray
   for (let space of spaces) {
@@ -242,7 +254,7 @@ function showNewPiece() {
     // Config the piece
     let piece = new Piece(board);
     space.content = piece;
-    tray.centralizeContent(space);
+    space.centralizeContent(space);
     piece.updateBlocksPosition();
     piece.zIndex = LayerManager.ZINDEX.PIECES;
 
