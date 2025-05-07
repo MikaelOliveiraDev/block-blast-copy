@@ -284,6 +284,62 @@ function render() {
   })
 }
 
+class DisplayObject {
+  constructor(origin = null) {
+    this.positionOrigin = origin
+    this.relX = 0;
+    this.relY = 0;
+    this.width = null
+    this.height = null
+  }
+
+  get x() {
+    if(!this.positionOrigin)
+      return this.relX
+    return this.positionOrigin.x + this.relX 
+  }
+  set x(x) {
+    if (this.positionOrigin) {
+      this.relX = x - this.positionOrigin.x;
+    } else {
+      this.relX = x;
+    }
+  }
+  get y() {
+    if (!this.positionOrigin) return this.relY;
+    return this.positionOrigin.y + this.relY;
+  }
+  set y(y) {
+    if (this.positionOrigin) {
+      this.relY = y - this.positionOrigin.y;
+    } else {
+      this.relY = y;
+    }
+  }
+  
+
+  changeOrigin(origin) {
+    // Change origin point preserving current absolute position
+    const absX = this.x
+    const absY = this.y
+    this.relX = absX - origin.x 
+    this.relY = absY - origin.y 
+    this.positionOrigin = origin
+  }
+  distanceTo(other) {
+    const dx = this.x - other.x;
+    const dy = this.y - other.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  isPointInside(px, py) {
+    return (
+      px >= this.x &&
+      px <= this.x + this.width &&
+      py >= this.y &&
+      py <= this.y + this.height
+    );
+  }
+}
 class Animation {
   constructor({ property, from, to, duration, onUpdate, onComplete }) {
     this.property = property;
