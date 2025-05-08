@@ -11,7 +11,7 @@ class TraySpace {
     this.content = content
     this.centralizeContent()
   }
-
+/* 
   positionAsInCenter(item) {
     item = item || this.content
 
@@ -25,8 +25,8 @@ class TraySpace {
     
     const {x, y} = this.positionAsInCenter()
     this.content.x = x
-    this.content.y = y
-  }
+    this.content.y = y 
+  }*/
   isPointInside(px, py) {
     return (
       this.x < px &&

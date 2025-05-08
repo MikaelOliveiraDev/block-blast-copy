@@ -1,7 +1,6 @@
-class Piece {
+class Piece extends DisplayObject {
   constructor(board) {
-    this.x = null;
-    this.y = null;
+    super()
     this.blocks = [];
     this.isBeingDragged = false;
     this.needsPositionUpdate = false;
@@ -221,6 +220,11 @@ class Piece {
 
   onDrag() {
     Piece.dragSound.play()
+
+    const marginToPoiner = 50
+
+    this.relX = 0
+    this.relY = -this.height/2 - marginToPoiner
   }
   onDrop() {
     let relX = this.x - board.x;
@@ -234,23 +238,17 @@ class Piece {
       showNewPiece();
       board.checkLost()
     } else {
+      this.changeOrigin(this.space)
       this.startGoBackAnimation();
     }
   }
 
   startGoBackAnimation(callback) {
-    let space = null;
-    for (space of trayspaces)
-      if (space.content === this) 
-        break;
+    if (!this.space)
+      console.error("Piece is not positioned in tray");
     
-    if (!space) console.error("Piece is not positioned in tray");
-    
-    const target = space.positionAsInCenter();
     const SPEED_PIXELS_PER_FRAME = 4;
-    const dx = target.x - this.x;
-    const dy = target.y - this.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+    const distance = this.distanceTo(this.space)
     const duration = Math.ceil(distance / SPEED_PIXELS_PER_FRAME);
     
     let complete = 0;
@@ -258,21 +256,23 @@ class Piece {
       if (++complete === 2 && callback) callback();
     };
 
+    const targetRelX = this.space.width / 2
+    const targetRelY = this.space.height / 2
     this.animations.push(
       new Animation({
-        property: "x",
-        from: this.x,
-        to: target.x,
+        property: "relX",
+        from: this.relX,
+        to: targetRelX,
         duration,
-        onUpdate: (x) => (this.x = x),
+        onUpdate: (x) => (this.relX = x),
         onComplete: checkAllComplete,
       }),
       new Animation({
-        property: "y",
-        from: this.y,
-        to: target.y,
+        property: "relY",
+        from: this.relY,
+        to: targetRelY,
         duration,
-        onUpdate: (y) => (this.y = y),
+        onUpdate: (y) => (this.relY = y),
         onComplete: checkAllComplete,
       })
     );
@@ -288,5 +288,11 @@ class Piece {
       this.updateBlocksPosition();
       this.needsPositionUpdate = false;
     }
+  }
+  draw(ctx) {
+    const x = this.x - this.width/2
+    const y = this.y - this.height/2
+
+    ctx.strokeRect(x, y, this.width, this.height)
   }
 }

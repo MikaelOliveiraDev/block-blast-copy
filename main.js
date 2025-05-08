@@ -51,15 +51,8 @@ const pointer = {
   y: null,
   hold: 0,
   dragging: null,
-  dragOffsetX: 0,
-  dragOffsetY: 0,
   update: function () {
     if (this.hold) this.hold++;
-
-    if (this.dragging) {
-      this.dragging.x = this.x + this.dragOffsetX;
-      this.dragging.y = this.y + this.dragOffsetY;
-    }
   },
   checkDown: function() {
     LayerManager.forEach((item) => {
@@ -70,12 +63,14 @@ const pointer = {
   drag: function (item) {
     this.dragging = item;
     this.dragging.isBeingDragged = true;
+    this.dragging.changeOrigin(this)
 
-    if (item.onDrag) item.onDrag()
-    if (item instanceof Piece) {
+    if (item.onDrag)
+      item.onDrag()
+    /* if (item instanceof Piece) {
       pointer.dragOffsetX = -(item.width / 2);
       pointer.dragOffsetY = -item.height - board.blockWidth;
-    }
+    } */
   },
   drop: function () {
     if (pointer.dragging.onDrop) pointer.dragging.onDrop();
@@ -253,11 +248,14 @@ function showNewPiece() {
 
     // Config the piece
     let piece = new Piece(board);
-    space.content = piece;
-    space.centralizeContent(space);
+    piece.space = space
+    piece.positionOrigin = space 
+    piece.relX = space.width / 2
+    piece.relY = space.height / 2
     piece.updateBlocksPosition();
     piece.zIndex = LayerManager.ZINDEX.PIECES;
-
+    
+    space.content = piece;
     LayerManager.add(piece);
     break;
   }
@@ -422,16 +420,16 @@ canvas.addEventListener("pointermove", (ev) => {
   pointer.y = ev.clientY - rect.top;
 })
 canvas.addEventListener("pointerup", (ev) => {
+  if(pointer.dragging) pointer.drop()
+
   pointer.x = null;
   pointer.y = null
   pointer.hold = false
-  
-  if(pointer.dragging) pointer.drop()
 })
 canvas.addEventListener("pointerleave", (ev) => {
+  if(pointer.dragging) pointer.drop()
+
   pointer.x = null;
   pointer.y = null
   pointer.hold = false
-  
-  if(pointer.dragging) pointer.drop()
 })
