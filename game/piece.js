@@ -106,7 +106,7 @@ class Piece extends DisplayObject {
         if (pattern[y][x] === 1) {
           this.blocks[y][x] = new Block();
           this.blocks[y][x].image = Block.images[imageID];
-          this.blocks[y][x].globalAlpha = 1;
+          this.blocks[y][x].positionOrigin = this
           this.blocks[y][x].zIndex = LayerManager.ZINDEX.PIECES;
           LayerManager.add(this.blocks[y][x]);
         } else {
@@ -150,15 +150,21 @@ class Piece extends DisplayObject {
   }
 
   updateBlocksPosition() {
+    const left = this.x - this.width / 2
+    const top = this.y - this.width / 2
+
     for (let y in this.blocks) {
       for (let x in this.blocks[y]) {
         let block = this.blocks[y][x];
         if (block === null) continue;
-        
+
         let blockOffsetX = x * this.blockWidth;
         let blockOffsetY = y * this.blockWidth;
-        block.x = this.x + blockOffsetX;
-        block.y = this.y + blockOffsetY;
+        /* 
+        block.relX = this.x + blockOffsetX - (this.width / 2)
+        block.y = this.y + blockOffsetY; */
+        block.relX = blockOffsetX - this.width / 2
+        block.relY = blockOffsetY - this.height / 2
       }
     }
   }
@@ -294,5 +300,9 @@ class Piece extends DisplayObject {
     const y = this.y - this.height/2
 
     ctx.strokeRect(x, y, this.width, this.height)
+
+    const left = this.x - this.width / 2
+    ctx.fillStyle = "red"
+    ctx.fillRect(left, y, 5, 5)
   }
 }

@@ -1,7 +1,6 @@
-class Block {
+class Block extends DisplayObject {
   constructor() {
-    this.x = null;
-    this.y = null;
+    super()
     this.width = board.blockWidth;
     this.image = null;
     this.alpha = 1;
@@ -66,24 +65,13 @@ class Block {
       return !animation.finished;
     });
   }
-  draw(ctx, x, y) {
-    let img = this.image
-
-    x = x || this.x;
-    y = y || this.y;
-    
+  draw(ctx) {
+    ctx.save()
+    ctx.translate(this.positionOrigin.x, this.positionOrigin.y)
+    ctx.translate(this.relX, this.relY)
     ctx.globalAlpha = this.alpha;
-    ctx.drawImage(img, x, y, this.width, this.width);
+    ctx.drawImage(this.image, 0, 0, this.width, this.width);
     ctx.globalAlpha = 1;
-  }
-  isPointInside(x, y) {
-    let top = this.y;
-    let right = this.x + this.width;
-    let bottom = this.y + this.width;
-    let left = this.x;
-
-    if (left < x && x < right) if (top < y && y < bottom) return true;
-
-    return false;
+    ctx.restore()
   }
 }

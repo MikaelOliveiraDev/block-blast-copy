@@ -94,7 +94,7 @@ const board = {
     //score.target += targetScore;
   },
   checkLost: function() {
-    for (let space of trayspace) {
+    for (let space of trayspaces) {
       let piece = space.content;
       let maxIndexY = this.yLength - piece.blocks.length;
       let maxIndexX = this.xLength - piece.blocks[0].length;
