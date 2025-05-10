@@ -288,9 +288,6 @@ class DisplayObject {
     // Reference is a coordinate in the this object, which is used to position on the canvas
     this._refX = 0
     this._refY = 0
-    
-    this._relX = 0
-    this._relY = 0
 
     this._absX = 0
     this._absY = 0
@@ -304,8 +301,8 @@ class DisplayObject {
   /* Getters */
   get refX() { return this._refX }
   get refY() { return this._refY }
-  get relX() { return this._relX }
-  get relY() { return this._relY }
+  get relX() { return this._absX - (this.positionOrigin?.absX ?? 0) }
+  get relY() { return this._absY - (this.positionOrigin?.absY ?? 0) }
   
   // Abolute is only getter
   get absX() { return this._absX }
@@ -323,12 +320,10 @@ class DisplayObject {
   set refX(x) { this._refX = x }
   set refY(y) { this._refY = y }
   set relX(x) {
-    this._relX = x 
-    this._absX = (this.positionOrigin?.absX ?? 0) + this._relX
+    this._absX = (this.positionOrigin?.absX ?? 0) + x
   }
   set relY(y) {
-    this._relY = y
-    this._absY = (this.positionOrigin?.absY ?? 0) + this._relY
+    this._absY = (this.positionOrigin?.absY ?? 0) + y
   }
   // Setters for absolute bounds
   set top(value) { this.relY = value + this._refY; }
@@ -352,25 +347,17 @@ class DisplayObject {
     }
   }
 
-  changeOrigin(origin) {
-    // Change origin point preserving current absolute position
-    const absX = this.x
-    const absY = this.y
-    this.relX = absX - origin.x 
-    this.relY = absY - origin.y 
-    this.positionOrigin = origin
-  }
   distanceTo(other) {
-    const dx = this.x - other.x;
-    const dy = this.y - other.y;
+    const dx = this.absX - other.absX;
+    const dy = this.absY - other.absY;
     return Math.sqrt(dx * dx + dy * dy);
   }
   isPointInside(px, py) {
     return (
-      px >= this.x &&
-      px <= this.x + this.width &&
-      py >= this.y &&
-      py <= this.y + this.height
+      px >= this.absX &&
+      px <= this.absX + this.width &&
+      py >= this.absY &&
+      py <= this.absY + this.height
     );
   }
 }
@@ -452,12 +439,26 @@ class Obj extends DisplayObject {
     this.refY = this.height / 2
     this.zIndex = 3
   }
+
+  onPointerDown() {
+    console.log("cliked demo")
+  }
   draw(ctx) {
-    this.top += .1
-    this.right += .1
-    console.log(this.right, this.absX, this.relX)
+    this.relX += .1
+    this.relY += .1
     ctx.fillRect(this.left, this.top, this.width, this.height)
     
+    if(this.relX > 25) {
+      const relX = this.relX
+      const relY = this.relY
+      this.positionOrigin = {
+        absX: 50,
+        absY: 50
+      }
+      this.relX = relX
+      this.relY = relY
+    }
+
     ctx.lineWidth = 2
     // TOP LEFT lines
     ctx.strokeStyle = "red"
@@ -478,7 +479,7 @@ class Obj extends DisplayObject {
 
     // REFERENCE
     ctx.fillStyle = "purple"
-    ctx.fillRect(this.relX, this.relY, 3, 3)
+    ctx.fillRect(this.absX, this.absY, 3, 3)
   }
 }
 setTimeout(() => {
