@@ -1,132 +1,110 @@
-const board = {
-  grid: [],
-  x: 10,
-  y: 100,
-  width: null,
-  height: null,
-  blockWidth: 38,
-  xLength: 8,
-  yLength: 8,
-  canvas: null,
-  init: function () {
-    // Define dimentions
+class Board extends DisplayObject {
+  constructor() {
+    super();
+    this.canvas = canvas;
+    this.blockWidth = 38;
+    this.xLength = 8;
+    this.yLength = 8;
+
     this.width = this.blockWidth * this.xLength;
     this.height = this.blockWidth * this.yLength;
-    // Define position
-    this.x = (this.canvas.width - this.width) / 2;
+    this.relX = (this.canvas.width - this.width) / 2;
+    this.relY = 100;
 
-    // Prepare the grid
-    for (let indexY = 0; indexY < this.yLength; indexY++) {
-      this.grid[indexY] = [];
-      for (let indexX = 0; indexX < this.xLength; indexX++) {
-        this.grid[indexY][indexX] = null;
-      }
-    }
-  },
-  checkBoardYs: function () {
-    // Check if some rows are filled
+    this.grid = Array.from({ length: this.yLength }, () =>
+      Array.from({ length: this.xLength }, () => null)
+    );
+  }
 
-    let filledYs = [];
+  checkBoardYs() {
+    const filledYs = [];
+
     for (let indexY in this.grid) {
-      let containsEmptyParts = false;
-
-      for (let indexX in this.grid[indexY]) {
-        if (this.grid[indexY][indexX]) continue;
-        else containsEmptyParts = true;
-        break;
+      if (this.grid[indexY].every(cell => cell !== null)) {
+        filledYs.push(parseInt(indexY));
       }
-
-      if (!containsEmptyParts) filledYs.push(indexY);
     }
+
     return filledYs;
-  },
-  checkBoardXs: function () {
-    // Check if some columns are filled
+  }
 
-    let filledXs = [];
+  checkBoardXs() {
+    const filledXs = [];
+
     for (let indexX = 0; indexX < this.xLength; indexX++) {
-      let containsEmptyParts = false;
-
-      for (let indexY = 0; indexY < board.yLength; indexY++) {
-        if (this.grid[indexY][indexX]) continue;
-        else containsEmptyParts = true;
-
-        break;
+      if (this.grid.every(row => row[indexX] !== null)) {
+        filledXs.push(indexX);
       }
-
-      if (!containsEmptyParts) filledXs.push(indexX);
     }
 
     return filledXs;
-  },
-  clearAlongY: function (indexY) {
+  }
+
+  clearAlongY(indexY) {
     let targetScore = 0;
     for (let indexX = 0; indexX < this.xLength; indexX++) {
-      let animationDelay = indexX * 30;
-      let block = this.grid[indexY][indexX];
-
-      setTimeout(() => {
-        block.startGrowFadeAnimations(() => LayerManager.remove(block));
-      }, animationDelay);
-
-      this.grid[indexY][indexX] = null;
-      targetScore++;
+      const block = this.grid[indexY][indexX];
+      if (block) {
+        setTimeout(() => {
+          block.startGrowFadeAnimations(() => LayerManager.remove(block));
+        }, indexX * 30);
+        this.grid[indexY][indexX] = null;
+        targetScore++;
+      }
     }
-    combo.play()
-    combo.increase()
-    //score.target += targetScore;
-  },
-  clearAlongX: function (indexX) {
+    combo.play();
+    combo.increase();
+  }
+
+  clearAlongX(indexX) {
     let targetScore = 0;
     for (let indexY = 0; indexY < this.yLength; indexY++) {
-      let animationDelay = indexY * 30;
-      let block = this.grid[indexY][indexX];
-
-      setTimeout(() => {
-        block.startGrowFadeAnimations(() => LayerManager.remove(block));
-      }, animationDelay);
-
-      this.grid[indexY][indexX] = null;
-      targetScore++;
+      const block = this.grid[indexY][indexX];
+      if (block) {
+        setTimeout(() => {
+          block.startGrowFadeAnimations(() => LayerManager.remove(block));
+        }, indexY * 30);
+        this.grid[indexY][indexX] = null;
+        targetScore++;
+      }
     }
-    combo.play()
-    combo.increase()
-    //score.target += targetScore;
-  },
-  checkLost: function() {
+    combo.play();
+    combo.increase();
+  }
+
+  checkLost() {
     for (let space of trayspaces) {
       let piece = space.content;
       let maxIndexY = this.yLength - piece.blocks.length;
       let maxIndexX = this.xLength - piece.blocks[0].length;
-  
-      // Check if fit on any part of the board grid
+
       for (let [y, row] of this.grid.entries()) {
         if (y > maxIndexY) continue;
         for (let [x, cell] of row.entries()) {
           if (x > maxIndexX || cell) continue;
-      
-          if (piece.checkFit(y, x)) return;
+
+          if (piece.checkFit(y, x)) return false;
         }
       }
-      
     }
-  
     alert("You've lost! Refresh the page to play again.");
-  },
-  draw: function (ctx) {
-    const colors = ["#a3a3a3", "#949494"];
+    return true;
+  }
 
+  draw(ctx) {
+    const colors = ["#a3a3a3", "#949494"];
     for (let indexY = 0; indexY < this.grid.length; indexY++) {
-		
       for (let indexX = 0; indexX < this.grid[indexY].length; indexX++) {
         let evenOdd = (indexY + indexX) % 2;
         let color = colors[evenOdd];
-		let x = this.blockWidth * indexX + this.x;
-		let y = this.blockWidth * indexY + this.y;
-	
-		ctx.fillStyle = color;
-		ctx.fillRect(x, y, this.blockWidth, this.blockWidth);
+        let x = this.blockWidth * indexX + this.left;
+        let y = this.blockWidth * indexY + this.top;
+
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, this.blockWidth, this.blockWidth);
       }
     }
-  },
-};
+  }
+}
+
+const board = new Board()

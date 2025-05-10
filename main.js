@@ -202,8 +202,6 @@ function createGameScreen() {
   
 }
 function startGame() {
-  board.init()
-
   window.trayspaces = []
 
   const numberOfTrays = 3
