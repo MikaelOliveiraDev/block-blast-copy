@@ -164,18 +164,18 @@ function createStartScreen() {
 
 
   // Game Title
-  const text = "Block Blast";
-  const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-  const gameTitle = {};
-  gradient.addColorStop(0.2, "white");
-  gradient.addColorStop(0.9, "gold");
+  const gameTitle = new DisplayObject()
+  gameTitle.text = "Block Blast";
   gameTitle.zIndex = LayerManager.ZINDEX.UI;
-  gameTitle.draw = (ctx) => {
-    ctx.fillStyle = gradient;
+  gameTitle.gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+  gameTitle.gradient.addColorStop(0.2, "white");
+  gameTitle.gradient.addColorStop(0.9, "gold");
+  gameTitle.draw = function(ctx) {
+    ctx.fillStyle = this.gradient;
     ctx.font = "bold italic 50px Verdana";
     ctx.textBaseline = "alphabetic";
     ctx.textAlign = "center";
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2 - 50);
+    ctx.fillText(this.text, canvas.width / 2, canvas.height / 2 - 50);
   };
 
   LayerManager.add(startButton);
