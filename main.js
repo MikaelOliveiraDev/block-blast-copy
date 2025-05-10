@@ -354,10 +354,10 @@ class DisplayObject {
   }
   isPointInside(px, py) {
     return (
-      px >= this.absX &&
-      px <= this.absX + this.width &&
-      py >= this.absY &&
-      py <= this.absY + this.height
+      px >= this.left &&
+      px <= this.right &&
+      py >= this.top &&
+      py <= this.bottom
     );
   }
 }
