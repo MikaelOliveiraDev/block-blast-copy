@@ -166,6 +166,8 @@ class Piece extends DisplayObject {
         block.y = this.y + blockOffsetY; */
         block.relX = blockOffsetX - this.width / 2
         block.relY = blockOffsetY - this.height / 2
+
+        console.log(block.relX, blockOffsetX, this.width)
       }
     }
   }

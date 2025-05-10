@@ -28,19 +28,19 @@ class Block extends DisplayObject {
         onComplete: () => checkAllDone(),
       }),
       new Animation({
-        property: "x",
-        from: this.x,
-        to: this.x - grow / 2,
+        property: "relX",
+        from: this.relX,
+        to: this.relX - grow / 2,
         duration,
-        onUpdate: (v) => (this.x = v),
+        onUpdate: (v) => (this.relX = v),
         onComplete: () => checkAllDone(),
       }),
       new Animation({
-        property: "y",
-        from: this.y,
-        to: this.y - grow / 2,
+        property: "relY",
+        from: this.relY,
+        to: this.relY - grow / 2,
         duration,
-        onUpdate: (v) => (this.y = v),
+        onUpdate: (v) => (this.relY = v),
         onComplete: () => checkAllDone(),
       }),
       new Animation({
@@ -68,9 +68,8 @@ class Block extends DisplayObject {
   draw(ctx) {
     ctx.save()
     ctx.translate(this.positionOrigin.x, this.positionOrigin.y)
-    ctx.translate(this.relX, this.relY)
     ctx.globalAlpha = this.alpha;
-    ctx.drawImage(this.image, 0, 0, this.width, this.width);
+    ctx.drawImage(this.image, this.left, this.top, this.width, this.width);
     ctx.globalAlpha = 1;
     ctx.restore()
   }
