@@ -283,38 +283,74 @@ function render() {
 }
 
 class DisplayObject {
-  constructor(origin = null) {
-    this.positionOrigin = origin
-    this.relX = 0;
-    this.relY = 0;
-    this.width = null
-    this.height = null
+  constructor() {
+    this._positionOrigin = DisplayObject.CANVAS_ORIGIN
+    // Reference is a coordinate in the this object, which is used to position on the canvas
+    this._refX = 0
+    this._refY = 0
+    
+    this._relX = 0
+    this._relY = 0
+
+    this._absX = 0
+    this._absY = 0
+
+    this.width = 0
+    this.height = 0
   }
 
-  get x() {
-    if(!this.positionOrigin)
-      return this.relX
-    return this.positionOrigin.x + this.relX 
-  }
-  set x(x) {
-    if (this.positionOrigin) {
-      this.relX = x - this.positionOrigin.x;
-    } else {
-      this.relX = x;
-    }
-  }
-  get y() {
-    if (!this.positionOrigin) return this.relY;
-    return this.positionOrigin.y + this.relY;
-  }
-  set y(y) {
-    if (this.positionOrigin) {
-      this.relY = y - this.positionOrigin.y;
-    } else {
-      this.relY = y;
-    }
-  }
+  static CANVAS_ORIGIN = Object.freeze({ absX: 0, absY: 0 })
+
+  /* Getters */
+  get refX() { return this._refX }
+  get refY() { return this._refY }
+  get relX() { return this._relX }
+  get relY() { return this._relY }
   
+  // Abolute is only getter
+  get absX() { return this._absX }
+  get absY() { return this._absY }
+
+  // Bounds are absolute and are calculated from the absolute positions
+  get top() { return this._absY - this._refY }
+  get left() { return this._absX - this._refX }
+  get bottom() { return this._absY - this._refY + this.height}
+  get right() { return this._absX - this._refX + this.width}
+
+  get positionOrigin() { return this._positionOrigin }
+  
+  /* Setters */
+  set refX(x) { this._refX = x }
+  set refY(y) { this._refY = y }
+  set relX(x) {
+    this._relX = x 
+    this._absX = (this.positionOrigin?.absX ?? 0) + this._relX
+  }
+  set relY(y) {
+    this._relY = y
+    this._absY = (this.positionOrigin?.absY ?? 0) + this._relY
+  }
+  // Setters for absolute bounds
+  set top(value) { this.relY = value + this._refY; }
+  set left(value) { this.relX = value + this._refX; }
+  set bottom(value) { this.relY = value - this.height + this._refY; }
+  set right(value) { this.relX = value - this.width + this._refX; }
+
+  // Prevent setting absX and absY directly
+  set absX(_) {
+    throw new Error("absX is read-only. Modify relX or positionOrigin instead.");
+  }
+  set absY(_) {
+    throw new Error("absY is read-only. Modify relY or positionOrigin instead.");
+  }
+
+  set positionOrigin(origin) {
+    if (!origin || typeof origin.absX !== "number" || typeof origin.absY !== "number") {
+      this._positionOrigin = DisplayObject.CANVAS_ORIGIN;
+    } else {
+      this._positionOrigin = origin;
+    }
+  }
 
   changeOrigin(origin) {
     // Change origin point preserving current absolute position
@@ -401,6 +437,61 @@ class Sound {
   }
 }
 
+/*
+
+
+This is just a demo */
+class Obj extends DisplayObject {
+  constructor() {
+    super()
+    this.relX = 0
+    this.relY = 0
+    this.width = 40
+    this.height = 40
+    this.refX = this.width / 2
+    this.refY = this.height / 2
+    this.zIndex = 3
+  }
+  draw(ctx) {
+    this.top += .1
+    this.right += .1
+    console.log(this.right, this.absX, this.relX)
+    ctx.fillRect(this.left, this.top, this.width, this.height)
+    
+    ctx.lineWidth = 2
+    // TOP LEFT lines
+    ctx.strokeStyle = "red"
+    ctx.beginPath()
+    ctx.moveTo(this.left, 0)
+    ctx.lineTo(this.left, this.top)
+    ctx.lineTo(0, this.top)
+    ctx.stroke()
+    ctx.closePath()
+    // RIGHT BOTTOM lines
+    ctx.strokeStyle = "yellow"
+    ctx.beginPath()
+    ctx.moveTo(this.right, canvas.height)
+    ctx.lineTo(this.right, this.bottom)
+    ctx.lineTo(canvas.width, this.bottom)
+    ctx.stroke()
+    ctx.closePath()
+
+    // REFERENCE
+    ctx.fillStyle = "purple"
+    ctx.fillRect(this.relX, this.relY, 3, 3)
+  }
+}
+setTimeout(() => {
+  
+  
+  const obj = new Obj()
+  LayerManager.add(obj)
+
+}, 500);
+/* Demo ends here
+
+
+*/
 
 canvas.addEventListener("pointerdown", (ev) => {
   ev.preventDefault()
