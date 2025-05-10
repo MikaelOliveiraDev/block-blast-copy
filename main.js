@@ -297,6 +297,11 @@ class DisplayObject {
   }
 
   static CANVAS_ORIGIN = Object.freeze({ absX: 0, absY: 0 })
+  static distance(fromX, fromY, toX, toY) {
+    const dx = toX - fromX;
+    const dy = toY - fromY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
 
   /* Getters */
   get refX() { return this._refX }
@@ -347,11 +352,6 @@ class DisplayObject {
     }
   }
 
-  distanceTo(other) {
-    const dx = this.absX - other.absX;
-    const dy = this.absY - other.absY;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
   isPointInside(px, py) {
     return (
       px >= this.left &&
