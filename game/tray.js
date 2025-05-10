@@ -29,6 +29,5 @@ class TraySpace extends DisplayObject {
   draw(ctx) {
     ctx.fillStyle = "#9e9e9e39";
     ctx.fillRect(this.left, this.top, this.width, this.height);
-    console.log("is drawing")
   }
 }

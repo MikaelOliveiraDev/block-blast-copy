@@ -16,10 +16,14 @@ class Piece extends DisplayObject {
     // Select an image
     let imageID = Math.floor(Math.random() * Block.images.length)
 
+
     this.createGrid(pattern, imageID);
     // Configure width and height
     this.width = this.blockWidth * pattern[0].length;
     this.height = this.blockWidth * pattern.length;
+    // Configure reference point
+    this.refX = this.width / 2
+    this.refY = this.height / 2
   }
 
   static patterns = [
@@ -150,9 +154,6 @@ class Piece extends DisplayObject {
   }
 
   updateBlocksPosition() {
-    const left = this.x - this.width / 2
-    const top = this.y - this.width / 2
-
     for (let y in this.blocks) {
       for (let x in this.blocks[y]) {
         let block = this.blocks[y][x];
@@ -296,13 +297,12 @@ class Piece extends DisplayObject {
     }
   }
   draw(ctx) {
-    const x = this.x - this.width/2
-    const y = this.y - this.height/2
+    ctx.strokeStyle = "yellow"
+    ctx.strokeRect(this.left, this.top, this.width, this.height)
 
-    ctx.strokeRect(x, y, this.width, this.height)
-
-    const left = this.x - this.width / 2
+    // The reference point
     ctx.fillStyle = "red"
-    ctx.fillRect(left, y, 5, 5)
+    const dot = 2
+    ctx.fillRect(this.absX - dot, this.absY - dot, dot*2, dot*2)
   }
 }
