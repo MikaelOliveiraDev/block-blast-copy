@@ -79,11 +79,6 @@ const pointer = {
   },
 };
 
-canvas.height = 800;
-canvas.width = 450;
-createStartScreen();
-update();
-
 function loadScript(url, callback) {
   const script = document.createElement("script")
   script.type = "text/javascript"
@@ -98,86 +93,75 @@ function createStartScreen() {
   const border = 8;
   const hue = 45;
   const saturation = 100;
-  const startButton = {
-    width: 160,
-    height: 60,
-    get x() {
-      return canvas.width / 2 - this.width / 2;
-    },
-    get y() {
-      return canvas.height / 2 - this.height / 2;
-    },
-    zIndex: LayerManager.ZINDEX.UI,
-    draw(ctx) {
-      const { x, y, width, height } = this;
+  const startButton = new DisplayObject()
+  startButton.width = 160
+  startButton.height = 60
+  startButton.relX = canvas.width / 2
+  startButton.relY = canvas.height / 2
+  startButton.refX = startButton.width / 2
+  startButton.refY = startButton.height / 2
+  startButton.zIndex = LayerManager.ZINDEX.UI
+  startButton.onPointerDown = createGameScreen
+  startButton.draw = function(ctx) {
+    const { left, top, right, bottom, width, height } = this
+    const centerX = this.refX
+    const centerY = this.refY
 
       // The square
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 55%)`;
-      ctx.fillRect(x, y, width, height);
+      ctx.fillRect(left, top, width, height);
 
       // Left border
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 62%)`;
       ctx.beginPath();
-      ctx.moveTo(x, y + height);
-      ctx.lineTo(x, y);
-      ctx.lineTo(x + border, y + border);
-      ctx.lineTo(x + border, y + height - border);
-      ctx.lineTo(x, y + height);
+      ctx.moveTo(left, bottom);
+      ctx.lineTo(left, top);
+      ctx.lineTo(left + border, top + border);
+      ctx.lineTo(left + border, bottom - border);
+      ctx.lineTo(left, bottom);
       ctx.fill();
       ctx.closePath();
 
       // Top border
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 74%)`;
       ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + width, y);
-      ctx.lineTo(x + width - border, y + border);
-      ctx.lineTo(x + border, y + border);
-      ctx.lineTo(x, y);
+      ctx.moveTo(left, top)
+      ctx.lineTo(right, top);
+      ctx.lineTo(right - border, top + border);
+      ctx.lineTo(left + border, top + border);
+      ctx.lineTo(left, top);
       ctx.fill();
       ctx.closePath();
 
       // Right border
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 48%)`;
       ctx.beginPath();
-      ctx.moveTo(x + width, y);
-      ctx.lineTo(x + width, y + height);
-      ctx.lineTo(x + width - border, y + height - border);
-      ctx.lineTo(x + width - border, y + border);
-      ctx.lineTo(x + width, y);
+      ctx.moveTo(right, top);
+      ctx.lineTo(right, bottom);
+      ctx.lineTo(right - border, bottom - border);
+      ctx.lineTo(right - border, top + border);
+      ctx.lineTo(right, top)
       ctx.fill();
       ctx.closePath();
-
       // Bottom border
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 45%)`;
       ctx.beginPath();
-      ctx.moveTo(x + width, y + height);
-      ctx.lineTo(x, y + height);
-      ctx.lineTo(x + border, y + height - border);
-      ctx.lineTo(x + width - border, y + height - border);
-      ctx.lineTo(x + width, y + height);
+      ctx.moveTo(right, bottom);
+      ctx.lineTo(left, bottom);
+      ctx.lineTo(left + border, bottom - border);
+      ctx.lineTo(right - border, bottom - border);
+      ctx.lineTo(right, bottom);
       ctx.fill();
       ctx.closePath();
-
+      
       // Text
       ctx.textBaseline = "middle";
       ctx.font = "bold italic 20px Verdana";
       ctx.fillStyle = "#664d00";
       ctx.textAlign = "center";
-      ctx.fillText("START", x + width / 2, y + height / 2);
-    },
-    isPointInside(x, y) {
-      return (
-        x >= this.x &&
-        x <= this.x + this.width &&
-        y >= this.y &&
-        y <= this.y + this.height
-      );
-    },
-    onPointerDown(pointer) {
-      createGameScreen()
-    }
-  }; 
+      ctx.fillText("START", left + centerX, top + centerY);
+  }
+
 
   // Game Title
   const text = "Block Blast";
@@ -424,75 +408,6 @@ class Sound {
   }
 }
 
-/*
-
-
-This is just a demo */
-class Obj extends DisplayObject {
-  constructor() {
-    super()
-    this.relX = 0
-    this.relY = 0
-    this.width = 40
-    this.height = 40
-    this.refX = this.width / 2
-    this.refY = this.height / 2
-    this.zIndex = 3
-  }
-
-  onPointerDown() {
-    console.log("cliked demo")
-  }
-  draw(ctx) {
-    this.relX += .1
-    this.relY += .1
-    ctx.fillRect(this.left, this.top, this.width, this.height)
-    
-    if(this.relX > 25) {
-      const relX = this.relX
-      const relY = this.relY
-      this.positionOrigin = {
-        absX: 50,
-        absY: 50
-      }
-      this.relX = relX
-      this.relY = relY
-    }
-
-    ctx.lineWidth = 2
-    // TOP LEFT lines
-    ctx.strokeStyle = "red"
-    ctx.beginPath()
-    ctx.moveTo(this.left, 0)
-    ctx.lineTo(this.left, this.top)
-    ctx.lineTo(0, this.top)
-    ctx.stroke()
-    ctx.closePath()
-    // RIGHT BOTTOM lines
-    ctx.strokeStyle = "yellow"
-    ctx.beginPath()
-    ctx.moveTo(this.right, canvas.height)
-    ctx.lineTo(this.right, this.bottom)
-    ctx.lineTo(canvas.width, this.bottom)
-    ctx.stroke()
-    ctx.closePath()
-
-    // REFERENCE
-    ctx.fillStyle = "purple"
-    ctx.fillRect(this.absX, this.absY, 3, 3)
-  }
-}
-setTimeout(() => {
-  
-  
-  const obj = new Obj()
-  LayerManager.add(obj)
-
-}, 500);
-/* Demo ends here
-
-
-*/
 
 canvas.addEventListener("pointerdown", (ev) => {
   ev.preventDefault()
@@ -502,7 +417,7 @@ canvas.addEventListener("pointerdown", (ev) => {
   pointer.y = ev.clientY - rect.top;
   pointer.hold = 0
 
-  pointer.checkDown()
+-  pointer.checkDown()
 })
 canvas.addEventListener("pointermove", (ev) => {
   ev.preventDefault()
@@ -525,3 +440,9 @@ canvas.addEventListener("pointerleave", (ev) => {
   pointer.y = null
   pointer.hold = false
 })
+
+
+canvas.height = 800;
+canvas.width = 450;
+createStartScreen();
+update();
