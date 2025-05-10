@@ -208,7 +208,7 @@ function startGame() {
   const width = canvas.width / numberOfTrays
   const gap = 5
   const marginTop = 15
-  const y = board.y + board.height + marginTop
+  const y = board.absY + board.height + marginTop
   for (let i = 0; i < numberOfTrays; i++) {
     const x = width * i + gap
     const tray = new TraySpace(x, y, width - 2*gap, width - 2*gap)
