@@ -228,7 +228,7 @@ function showNewPiece() {
   piece.positionOrigin = slot;
   piece.relX = slot.width / 2;
   piece.relY = slot.height / 2;
-  piece.updateBlocksPosition();
+  piece.scale = .5
   piece.zIndex = LayerManager.ZINDEX.PIECES;
 
   slot.content = piece;

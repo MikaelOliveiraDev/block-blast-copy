@@ -4,7 +4,9 @@ class Block extends DisplayObject {
     this.width = board.blockWidth;
     this.image = null;
     this.alpha = 1;
-
+    this.refX = this.width / 2
+    this.refY = this.width / 2
+    
     this.animations = [];
   }
 
@@ -66,11 +68,18 @@ class Block extends DisplayObject {
     });
   }
   draw(ctx) {
+    const originX = this.positionOrigin.absX
+    const originY = this.positionOrigin.absY
+    const scale = this.positionOrigin.scale || 1
+
     ctx.save();
-    ctx.translate(this.positionOrigin.x, this.positionOrigin.y);
-    ctx.globalAlpha = this.alpha;
-    ctx.drawImage(this.image, this.left, this.top, this.width, this.width);
+    ctx.translate(originX, originY);
+    ctx.scale(scale, scale)
+
+    ctx.globalAlpha = this.alpha
+    ctx.drawImage(this.image, this.relX, this.relY, this.width, this.width);
     ctx.globalAlpha = 1;
+
     ctx.restore();
   }
 }

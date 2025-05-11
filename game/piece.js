@@ -3,9 +3,9 @@ class Piece extends DisplayObject {
     super();
     this.blocks = [];
     this.isBeingDragged = false;
-    this.needsPositionUpdate = false;
     this.animations = [];
     this.blockWidth = board.blockWidth;
+    this.scale = 1
 
     // Select a random pattern
     let index = Math.floor(Math.random() * Piece.patterns.length);
@@ -16,13 +16,14 @@ class Piece extends DisplayObject {
     // Select an image
     let imageID = Math.floor(Math.random() * Block.images.length);
 
-    this.createGrid(pattern, imageID);
     // Configure width and height
     this.width = this.blockWidth * pattern[0].length;
     this.height = this.blockWidth * pattern.length;
     // Configure reference point
     this.refX = this.width / 2;
     this.refY = this.height / 2;
+
+    this.createGrid(pattern, imageID);
   }
 
   static patterns = [
@@ -107,10 +108,14 @@ class Piece extends DisplayObject {
       this.blocks[y] = [];
       for (let x in pattern[y]) {
         if (pattern[y][x] === 1) {
-          this.blocks[y][x] = new Block();
-          this.blocks[y][x].image = Block.images[imageID];
-          this.blocks[y][x].positionOrigin = this;
-          this.blocks[y][x].zIndex = LayerManager.ZINDEX.PIECES;
+          const block = new Block();
+          block.image = Block.images[imageID];
+          block.zIndex = LayerManager.ZINDEX.PIECES;
+          block.positionOrigin = this;
+          block.relX = 0 - this.refX + (x * this.blockWidth)
+          block.relY = 0 - this.refY + (y * this.blockWidth)
+
+          this.blocks[y][x] = block
           LayerManager.add(this.blocks[y][x]);
         } else {
           this.blocks[y][x] = null;
@@ -150,23 +155,6 @@ class Piece extends DisplayObject {
     }
 
     return true;
-  }
-
-  updateBlocksPosition() {
-    for (let y in this.blocks) {
-      for (let x in this.blocks[y]) {
-        let block = this.blocks[y][x];
-        if (block === null) continue;
-
-        let blockOffsetX = x * this.blockWidth;
-        let blockOffsetY = y * this.blockWidth;
-        /* 
-        block.relX = this.x + blockOffsetX - (this.width / 2)
-        block.y = this.y + blockOffsetY; */
-        block.relX = blockOffsetX - this.width / 2;
-        block.relY = blockOffsetY - this.height / 2;
-      }
-    }
   }
 
   isPointInside(x, y) {
@@ -219,6 +207,7 @@ class Piece extends DisplayObject {
 
   onDrag() {
     Piece.dragSound.play();
+    this.scale = 1
 
     const marginToPoiner = 50;
 
@@ -230,8 +219,7 @@ class Piece extends DisplayObject {
     const relLeft = this.left - board.absX;
     const indexX = Math.round(relLeft / this.blockWidth);
     const indexY = Math.round(relTop / this.blockWidth);
-
-    console.log("board's indexX indexY", indexX, indexY);
+    
     if (this.checkFit(indexY, indexX)) {
       Piece.dropSound.play();
       this.placeOnBoard(indexX, indexY);
@@ -239,7 +227,9 @@ class Piece extends DisplayObject {
       board.checkLost();
     } else {
       this.positionOrigin = this.slot;
-      this.startGoBackAnimation();
+      this.startGoBackAnimation(() => {
+        this.scale = .5
+      });
     }
   }
 
@@ -288,21 +278,21 @@ class Piece extends DisplayObject {
       return !animation.finished;
     });
 
-    /*
-    if (this.isBeingDragged || this.needsPositionUpdate) {
-      this.updateBlocksPosition();
-      this.needsPositionUpdate = false;
-    }
-      */
   }
   draw(ctx) {
+    ctx.save()
+    ctx.translate(this.absX, this.absY)
+    ctx.scale(this.scale, this.scale)
+
     ctx.strokeStyle = "yellow";
-    ctx.strokeRect(this.left, this.top, this.width, this.height);
+    ctx.strokeRect(-this.refX, -this.refY, this.width, this.height);
     //console.log("piece", this.positionOrigin)
 
     // The reference point
     ctx.fillStyle = "red";
     const dot = 2;
-    ctx.fillRect(this.absX - dot, this.absY - dot, dot * 2, dot * 2);
+    ctx.fillRect(-dot, -dot, dot * 2, dot * 2);
+
+    ctx.restore()
   }
 }
