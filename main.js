@@ -450,6 +450,7 @@ function updatePointerPosition(ev) {
   const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY
   pointer.absX = clientX - rect.left;
   pointer.absY = clientY - rect.top;
+
 }
 
 function handleDown(ev) {
