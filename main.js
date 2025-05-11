@@ -121,7 +121,6 @@ function createStartScreen() {
       ctx.lineTo(left, bottom);
       ctx.fill();
       ctx.closePath();
-      console.log("button top left", top, left)
 
       // Top border
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 74%)`;
@@ -311,10 +310,10 @@ class DisplayObject {
   set relX(x) { this._relX = x }
   set relY(y) { this._relY = y }
   // Setters for absolute bounds
-  set top(value) { this.absY = value + this._refY; }
-  set left(value) { this.absX = value + this._refX; }
-  set bottom(value) { this.absY = value - this.height + this._refY; }
-  set right(value) { this.absX = value - this.width + this._refX; }
+  set top(value) { this._relY = value + this._refY - this._origin.absY; }
+  set left(value) { this._refY = value + this._refX - this._origin.absY; }
+  set bottom(value) { this.top = value - this.height }
+  set right(value) { this.left = value - this.width }
 
   // Prevent setting absX and absY directly
   set absX(_) {
@@ -366,7 +365,6 @@ class Animation {
     const progress = Math.min(elapsed / this.duration, 1);
     const value = this.from + (this.to - this.from) * progress;
     this.onUpdate(value);
-    console.log(progress)
 
     if (progress === 1) {
       this.finished = true;

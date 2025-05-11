@@ -185,17 +185,11 @@ class Piece extends DisplayObject {
     return false;
   }
 
-  placeOnBoard() {
-    // Compute index position
-    let relX = this.x - board.x;
-    let relY = this.y - board.y;
-    let indexX = Math.round(relX / this.blockWidth);
-    let indexY = Math.round(relY / this.blockWidth);
-
+  placeOnBoard(indexX, indexY) {
+    this.positionOrigin = board
     // Align this piece on the board grid
-    this.x = indexX * this.blockWidth + board.x;
-    this.y = indexY * this.blockWidth + board.y;
-    this.updateBlocksPosition();
+    this.left = board.left + indexX * this.blockWidth;
+    this.top = board.top + indexY * this.blockWidth;
 
     // Put each block of piece in the board
     for (let y = 0; y < this.blocks.length; y++) {
@@ -205,6 +199,9 @@ class Piece extends DisplayObject {
           let bx = indexX + x;
           let by = indexY + y;
           board.grid[by][bx] = block;
+          block.positionOrigin = board
+          block.relX = bx * this.blockWidth
+          block.relY = by * this.blockWidth
           LayerManager.change(block, LayerManager.ZINDEX.BOARD_ITEMS);
         }
       }
@@ -218,11 +215,7 @@ class Piece extends DisplayObject {
 
     // Remove this piece from screen and tray
     LayerManager.remove(this);
-    for (let space of trayspaces) {
-      if (space.content == this) {
-        space.content = null;
-      }
-    }
+    this.space.content = null
   }
 
   onDrag() {
@@ -234,14 +227,15 @@ class Piece extends DisplayObject {
     this.relY = this.height/2 - marginToPoiner
   }
   onDrop() {
-    let relX = this.x - board.x;
-    let relY = this.y - board.y;
-    let indexX = Math.round(relX / this.blockWidth);
-    let indexY = Math.round(relY / this.blockWidth);
+    const relTop = this.top - board.absY
+    const relLeft = this.left - board.absX
+    const indexX = Math.round(relLeft / this.blockWidth);
+    const indexY = Math.round(relTop / this.blockWidth);
 
+    console.log("board's indexX indexY", indexX, indexY)
     if (this.checkFit(indexY, indexX)) {
       Piece.dropSound.play()
-      this.placeOnBoard();
+      this.placeOnBoard(indexX, indexY);
       showNewPiece();
       board.checkLost()
     } else {
@@ -265,16 +259,12 @@ class Piece extends DisplayObject {
       targetRelY
     )
     const duration = Math.ceil(distance / SPEED_PIXELS_PER_FRAME);
-    console.log("SPEED_PIXELS_PER_FRAME", SPEED_PIXELS_PER_FRAME)
-    console.log("distance", distance, "duration", duration)
     
     let complete = 0;
     const checkAllComplete = () => {
       if (++complete === 2 && callback) callback();
     };
-    
-    console.log("x", this.relX, targetRelX)
-    console.log("y", this.relY, targetRelY)
+  
     this.animations.push(
       new Animation({
         property: "relX",
