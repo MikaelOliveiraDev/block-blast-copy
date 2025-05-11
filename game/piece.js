@@ -1,11 +1,11 @@
 class Piece extends DisplayObject {
   constructor(board) {
-    super()
+    super();
     this.blocks = [];
     this.isBeingDragged = false;
     this.needsPositionUpdate = false;
     this.animations = [];
-    this.blockWidth = board.blockWidth
+    this.blockWidth = board.blockWidth;
 
     // Select a random pattern
     let index = Math.floor(Math.random() * Piece.patterns.length);
@@ -14,16 +14,15 @@ class Piece extends DisplayObject {
     let rotations = Math.floor(Math.random() * 4);
     for (let i = 0; i < rotations; i++) pattern = Piece.rotatePattern(pattern);
     // Select an image
-    let imageID = Math.floor(Math.random() * Block.images.length)
-
+    let imageID = Math.floor(Math.random() * Block.images.length);
 
     this.createGrid(pattern, imageID);
     // Configure width and height
     this.width = this.blockWidth * pattern[0].length;
     this.height = this.blockWidth * pattern.length;
     // Configure reference point
-    this.refX = this.width / 2
-    this.refY = this.height / 2
+    this.refX = this.width / 2;
+    this.refY = this.height / 2;
   }
 
   static patterns = [
@@ -77,8 +76,8 @@ class Piece extends DisplayObject {
     ],
     [[1]],
   ];
-  static dragSound = new Sound("./assets/drag-block.aac", 7)
-  static dropSound = new Sound("./assets/drop-block.aac", 7)
+  static dragSound = new Sound("./assets/drag-block.aac", 7);
+  static dropSound = new Sound("./assets/drop-block.aac", 7);
 
   static rotatePattern(pattern) {
     // Get the number of rows and columns at pattern
@@ -110,7 +109,7 @@ class Piece extends DisplayObject {
         if (pattern[y][x] === 1) {
           this.blocks[y][x] = new Block();
           this.blocks[y][x].image = Block.images[imageID];
-          this.blocks[y][x].positionOrigin = this
+          this.blocks[y][x].positionOrigin = this;
           this.blocks[y][x].zIndex = LayerManager.ZINDEX.PIECES;
           LayerManager.add(this.blocks[y][x]);
         } else {
@@ -121,10 +120,10 @@ class Piece extends DisplayObject {
   }
 
   checkFit(desY, desX) {
-    /* Check if board.grid has space to fit this piece in the given indexes. */
+    /* Check if board.grid has slot to fit this piece in the given indexes. */
     /* desX => destination index in which the PIECE would be placed */
     /* blcX => BLOCK index relative to the PIECE index */
-    /* brdX => BOARD space index in which the BLOCK would be placed */
+    /* brdX => BOARD slot index in which the BLOCK would be placed */
     desX = Number(desX);
     desY = Number(desY);
 
@@ -164,8 +163,8 @@ class Piece extends DisplayObject {
         /* 
         block.relX = this.x + blockOffsetX - (this.width / 2)
         block.y = this.y + blockOffsetY; */
-        block.relX = blockOffsetX - this.width / 2
-        block.relY = blockOffsetY - this.height / 2
+        block.relX = blockOffsetX - this.width / 2;
+        block.relY = blockOffsetY - this.height / 2;
       }
     }
   }
@@ -186,7 +185,7 @@ class Piece extends DisplayObject {
   }
 
   placeOnBoard(indexX, indexY) {
-    this.positionOrigin = board
+    this.positionOrigin = board;
     // Align this piece on the board grid
     this.left = board.left + indexX * this.blockWidth;
     this.top = board.top + indexY * this.blockWidth;
@@ -199,9 +198,9 @@ class Piece extends DisplayObject {
           let bx = indexX + x;
           let by = indexY + y;
           board.grid[by][bx] = block;
-          block.positionOrigin = board
-          block.relX = bx * this.blockWidth
-          block.relY = by * this.blockWidth
+          block.positionOrigin = board;
+          block.relX = bx * this.blockWidth;
+          block.relY = by * this.blockWidth;
           LayerManager.change(block, LayerManager.ZINDEX.BOARD_ITEMS);
         }
       }
@@ -213,58 +212,57 @@ class Piece extends DisplayObject {
     for (let indexY of filledYs) board.clearAlongY(indexY);
     for (let indexX of filledXs) board.clearAlongX(indexX);
 
-    // Remove this piece from screen and tray
+    // Remove this piece from screen and slot
     LayerManager.remove(this);
-    this.space.content = null
+    this.slot.content = null;
   }
 
   onDrag() {
-    Piece.dragSound.play()
+    Piece.dragSound.play();
 
-    const marginToPoiner = 50
+    const marginToPoiner = 50;
 
-    this.relX = 0
-    this.relY = this.height/2 - marginToPoiner
+    this.relX = 0;
+    this.relY = this.height / 2 - marginToPoiner;
   }
   onDrop() {
-    const relTop = this.top - board.absY
-    const relLeft = this.left - board.absX
+    const relTop = this.top - board.absY;
+    const relLeft = this.left - board.absX;
     const indexX = Math.round(relLeft / this.blockWidth);
     const indexY = Math.round(relTop / this.blockWidth);
 
-    console.log("board's indexX indexY", indexX, indexY)
+    console.log("board's indexX indexY", indexX, indexY);
     if (this.checkFit(indexY, indexX)) {
-      Piece.dropSound.play()
+      Piece.dropSound.play();
       this.placeOnBoard(indexX, indexY);
       showNewPiece();
-      board.checkLost()
+      board.checkLost();
     } else {
-      this.positionOrigin = this.space
+      this.positionOrigin = this.slot;
       this.startGoBackAnimation();
     }
   }
 
   startGoBackAnimation(callback) {
-    if (!this.space)
-      console.error("Piece is not positioned in tray");
+    if (!this.slot) console.error("Piece is not positioned in slot");
 
-    const targetRelX = this.space.width / 2
-    const targetRelY = this.space.height / 2
+    const targetRelX = this.slot.width / 2;
+    const targetRelY = this.slot.height / 2;
 
     const SPEED_PIXELS_PER_FRAME = 4;
     const distance = DisplayObject.distance(
-      this.relX, 
+      this.relX,
       this.relY,
       targetRelX,
       targetRelY
-    )
+    );
     const duration = Math.ceil(distance / SPEED_PIXELS_PER_FRAME);
-    
+
     let complete = 0;
     const checkAllComplete = () => {
       if (++complete === 2 && callback) callback();
     };
-  
+
     this.animations.push(
       new Animation({
         property: "relX",
@@ -281,7 +279,7 @@ class Piece extends DisplayObject {
         duration,
         onUpdate: (y) => (this.relY = y),
         onComplete: checkAllComplete,
-      })  
+      })
     );
   }
   update(now) {
@@ -298,13 +296,13 @@ class Piece extends DisplayObject {
       */
   }
   draw(ctx) {
-    ctx.strokeStyle = "yellow"
-    ctx.strokeRect(this.left, this.top, this.width, this.height)
+    ctx.strokeStyle = "yellow";
+    ctx.strokeRect(this.left, this.top, this.width, this.height);
     //console.log("piece", this.positionOrigin)
 
     // The reference point
-    ctx.fillStyle = "red"
-    const dot = 2
-    ctx.fillRect(this.absX - dot, this.absY - dot, dot*2, dot*2)
+    ctx.fillStyle = "red";
+    const dot = 2;
+    ctx.fillRect(this.absX - dot, this.absY - dot, dot * 2, dot * 2);
   }
 }

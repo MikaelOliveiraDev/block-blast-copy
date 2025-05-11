@@ -1,6 +1,6 @@
 class Block extends DisplayObject {
   constructor() {
-    super()
+    super();
     this.width = board.blockWidth;
     this.image = null;
     this.alpha = 1;
@@ -9,13 +9,13 @@ class Block extends DisplayObject {
   }
 
   static images = Array.from({ length: 4 }, (_, i) => {
-    const img = new Image()
-    img.src = `./assets/block-${i}.png`
-    return img
-  })
+    const img = new Image();
+    img.src = `./assets/block-${i}.png`;
+    return img;
+  });
 
   startGrowFadeAnimations(callback) {
-    const grow = 10
+    const grow = 10;
     const duration = 500;
 
     this.animations.push(
@@ -66,11 +66,11 @@ class Block extends DisplayObject {
     });
   }
   draw(ctx) {
-    ctx.save()
-    ctx.translate(this.positionOrigin.x, this.positionOrigin.y)
+    ctx.save();
+    ctx.translate(this.positionOrigin.x, this.positionOrigin.y);
     ctx.globalAlpha = this.alpha;
     ctx.drawImage(this.image, this.left, this.top, this.width, this.width);
     ctx.globalAlpha = 1;
-    ctx.restore()
+    ctx.restore();
   }
 }

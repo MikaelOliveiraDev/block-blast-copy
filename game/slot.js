@@ -1,4 +1,4 @@
-class TraySpace extends DisplayObject {
+class Slot extends DisplayObject {
   constructor(x, y, width, height) {
     super();
     this.width = width;

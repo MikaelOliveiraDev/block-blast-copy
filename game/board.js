@@ -20,7 +20,7 @@ class Board extends DisplayObject {
     const filledYs = [];
 
     for (let indexY in this.grid) {
-      if (this.grid[indexY].every(cell => cell !== null)) {
+      if (this.grid[indexY].every((cell) => cell !== null)) {
         filledYs.push(parseInt(indexY));
       }
     }
@@ -32,7 +32,7 @@ class Board extends DisplayObject {
     const filledXs = [];
 
     for (let indexX = 0; indexX < this.xLength; indexX++) {
-      if (this.grid.every(row => row[indexX] !== null)) {
+      if (this.grid.every((row) => row[indexX] !== null)) {
         filledXs.push(indexX);
       }
     }
@@ -73,8 +73,8 @@ class Board extends DisplayObject {
   }
 
   checkLost() {
-    for (let space of trayspaces) {
-      let piece = space.content;
+    for (let slot of slots) {
+      let piece = slot.content;
       let maxIndexY = this.yLength - piece.blocks.length;
       let maxIndexX = this.xLength - piece.blocks[0].length;
 
@@ -107,4 +107,4 @@ class Board extends DisplayObject {
   }
 }
 
-const board = new Board()
+const board = new Board();
