@@ -219,7 +219,7 @@ class Piece extends DisplayObject {
     const relLeft = this.left - board.absX;
     const indexX = Math.round(relLeft / this.blockWidth);
     const indexY = Math.round(relTop / this.blockWidth);
-    
+
     if (this.checkFit(indexY, indexX)) {
       Piece.dropSound.play();
       this.placeOnBoard(indexX, indexY);
@@ -280,6 +280,7 @@ class Piece extends DisplayObject {
 
   }
   draw(ctx) {
+    return
     ctx.save()
     ctx.translate(this.absX, this.absY)
     ctx.scale(this.scale, this.scale)
