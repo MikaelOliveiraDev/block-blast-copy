@@ -166,8 +166,6 @@ class Piece extends DisplayObject {
         block.y = this.y + blockOffsetY; */
         block.relX = blockOffsetX - this.width / 2
         block.relY = blockOffsetY - this.height / 2
-
-        console.log(block.relX, blockOffsetX, this.width)
       }
     }
   }
@@ -233,7 +231,7 @@ class Piece extends DisplayObject {
     const marginToPoiner = 50
 
     this.relX = 0
-    this.relY = -this.height/2 - marginToPoiner
+    this.relY = this.height/2 - marginToPoiner
   }
   onDrop() {
     let relX = this.x - board.x;
@@ -247,7 +245,7 @@ class Piece extends DisplayObject {
       showNewPiece();
       board.checkLost()
     } else {
-      this.changeOrigin(this.space)
+      this.positionOrigin = this.space
       this.startGoBackAnimation();
     }
   }
@@ -255,18 +253,28 @@ class Piece extends DisplayObject {
   startGoBackAnimation(callback) {
     if (!this.space)
       console.error("Piece is not positioned in tray");
-    
+
+    const targetRelX = this.space.width / 2
+    const targetRelY = this.space.height / 2
+
     const SPEED_PIXELS_PER_FRAME = 4;
-    const distance = this.distanceTo(this.space)
+    const distance = DisplayObject.distance(
+      this.relX, 
+      this.relY,
+      targetRelX,
+      targetRelY
+    )
     const duration = Math.ceil(distance / SPEED_PIXELS_PER_FRAME);
+    console.log("SPEED_PIXELS_PER_FRAME", SPEED_PIXELS_PER_FRAME)
+    console.log("distance", distance, "duration", duration)
     
     let complete = 0;
     const checkAllComplete = () => {
       if (++complete === 2 && callback) callback();
     };
-
-    const targetRelX = this.space.width / 2
-    const targetRelY = this.space.height / 2
+    
+    console.log("x", this.relX, targetRelX)
+    console.log("y", this.relY, targetRelY)
     this.animations.push(
       new Animation({
         property: "relX",
@@ -283,24 +291,26 @@ class Piece extends DisplayObject {
         duration,
         onUpdate: (y) => (this.relY = y),
         onComplete: checkAllComplete,
-      })
+      })  
     );
   }
   update(now) {
     this.animations = this.animations.filter((animation) => {
       animation.update(now);
-      this.needsPositionUpdate = true;
       return !animation.finished;
     });
 
+    /*
     if (this.isBeingDragged || this.needsPositionUpdate) {
       this.updateBlocksPosition();
       this.needsPositionUpdate = false;
     }
+      */
   }
   draw(ctx) {
     ctx.strokeStyle = "yellow"
     ctx.strokeRect(this.left, this.top, this.width, this.height)
+    //console.log("piece", this.positionOrigin)
 
     // The reference point
     ctx.fillStyle = "red"

@@ -21,7 +21,7 @@ class TraySpace extends DisplayObject {
   }
 
   onPointerDown(pointer) {
-    if (this.isPointInside(pointer.x, pointer.y) && this.content) {
+    if (this.isPointInside(pointer.absX, pointer.absY) && this.content) {
       pointer.drag(this.content);
     }
   }

@@ -47,8 +47,8 @@ const LayerManager = {
 };
 
 const pointer = {
-  x: null,
-  y: null,
+  absX: null,
+  absY: null,
   hold: 0,
   dragging: null,
   update: function () {
@@ -56,14 +56,14 @@ const pointer = {
   },
   checkDown: function() {
     LayerManager.forEach((item) => {
-      if(item.isPointInside && item.isPointInside(pointer.x, pointer.y) && item.onPointerDown)
-        item.onPointerDown(pointer)
+      if(item.isPointInside && item.isPointInside(this.absX, this.absY) && item.onPointerDown) 
+        item.onPointerDown(this)
     })
   },
   drag: function (item) {
     this.dragging = item;
     this.dragging.isBeingDragged = true;
-    this.dragging.changeOrigin(this)
+    this.dragging.positionOrigin = this
 
     if (item.onDrag)
       item.onDrag()
@@ -121,6 +121,7 @@ function createStartScreen() {
       ctx.lineTo(left, bottom);
       ctx.fill();
       ctx.closePath();
+      console.log("button top left", top, left)
 
       // Top border
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, 74%)`;
@@ -229,9 +230,9 @@ function showNewPiece() {
     if (space.content) continue;
 
     // Config the piece
-    let piece = new Piece(board);
+    let piece = new Piece(board, space);
     piece.space = space
-    piece.positionOrigin = space 
+    piece.positionOrigin = space
     piece.relX = space.width / 2
     piece.relY = space.height / 2
     piece.updateBlocksPosition();
@@ -266,13 +267,13 @@ function render() {
 
 class DisplayObject {
   constructor() {
-    this._positionOrigin = DisplayObject.CANVAS_ORIGIN
+    this._origin = DisplayObject.CANVAS_ORIGIN
     // Reference is a coordinate in the this object, which is used to position on the canvas
     this._refX = 0
     this._refY = 0
 
-    this._absX = 0
-    this._absY = 0
+    this._relX = 0
+    this._relY = 0
 
     this.width = 0
     this.height = 0
@@ -288,35 +289,32 @@ class DisplayObject {
   /* Getters */
   get refX() { return this._refX }
   get refY() { return this._refY }
-  get relX() { return this._absX - (this.positionOrigin?.absX ?? 0) }
-  get relY() { return this._absY - (this.positionOrigin?.absY ?? 0) }
+  get relX() { return this._relX }
+  get relY() { return this._relY }
   
   // Abolute is only getter
-  get absX() { return this._absX }
-  get absY() { return this._absY }
+  get absX() { return this._origin.absX + this._relX }
+  get absY() { return this._origin.absY + this._relY }
 
   // Bounds are absolute and are calculated from the absolute positions
-  get top() { return this._absY - this._refY }
-  get left() { return this._absX - this._refX }
-  get bottom() { return this._absY - this._refY + this.height}
-  get right() { return this._absX - this._refX + this.width}
+  get top() { return this.absY - this._refY }
+  get left() { return this.absX - this._refX }
+  get bottom() { return this.absY - this._refY + this.height}
+  get right() { return this.absX - this._refX + this.width}
 
-  get positionOrigin() { return this._positionOrigin }
+  get positionOrigin() { 
+    return this._origin }
   
   /* Setters */
   set refX(x) { this._refX = x }
   set refY(y) { this._refY = y }
-  set relX(x) {
-    this._absX = (this.positionOrigin?.absX ?? 0) + x
-  }
-  set relY(y) {
-    this._absY = (this.positionOrigin?.absY ?? 0) + y
-  }
+  set relX(x) { this._relX = x }
+  set relY(y) { this._relY = y }
   // Setters for absolute bounds
-  set top(value) { this.relY = value + this._refY; }
-  set left(value) { this.relX = value + this._refX; }
-  set bottom(value) { this.relY = value - this.height + this._refY; }
-  set right(value) { this.relX = value - this.width + this._refX; }
+  set top(value) { this.absY = value + this._refY; }
+  set left(value) { this.absX = value + this._refX; }
+  set bottom(value) { this.absY = value - this.height + this._refY; }
+  set right(value) { this.absX = value - this.width + this._refX; }
 
   // Prevent setting absX and absY directly
   set absX(_) {
@@ -327,10 +325,14 @@ class DisplayObject {
   }
 
   set positionOrigin(origin) {
+    const absX = this.absX
+    const absY = this.absY
     if (!origin || typeof origin.absX !== "number" || typeof origin.absY !== "number") {
-      this._positionOrigin = DisplayObject.CANVAS_ORIGIN;
+      this._origin = DisplayObject.CANVAS_ORIGIN;
     } else {
-      this._positionOrigin = origin;
+      this._origin = origin;
+      this._relX = absX - origin.absX
+      this._relY = absY - origin.absY
     }
   }
 
@@ -364,6 +366,7 @@ class Animation {
     const progress = Math.min(elapsed / this.duration, 1);
     const value = this.from + (this.to - this.from) * progress;
     this.onUpdate(value);
+    console.log(progress)
 
     if (progress === 1) {
       this.finished = true;
@@ -411,31 +414,31 @@ canvas.addEventListener("pointerdown", (ev) => {
   ev.preventDefault()
   const rect = canvas.getBoundingClientRect()
   
-  pointer.x = ev.clientX - rect.left;
-  pointer.y = ev.clientY - rect.top;
+  pointer.absX = ev.clientX - rect.left;
+  pointer.absY = ev.clientY - rect.top;
   pointer.hold = 0
 
--  pointer.checkDown()
+  pointer.checkDown()
 })
 canvas.addEventListener("pointermove", (ev) => {
   ev.preventDefault()
 
   const rect = ev.target.getBoundingClientRect()
-  pointer.x = ev.clientX - rect.left;
-  pointer.y = ev.clientY - rect.top;
+  pointer.absX = ev.clientX - rect.left;
+  pointer.absY = ev.clientY - rect.top;
 })
 canvas.addEventListener("pointerup", (ev) => {
   if(pointer.dragging) pointer.drop()
 
-  pointer.x = null;
-  pointer.y = null
+  pointer.absX = null;
+  pointer.absY = null
   pointer.hold = false
 })
 canvas.addEventListener("pointerleave", (ev) => {
   if(pointer.dragging) pointer.drop()
 
-  pointer.x = null;
-  pointer.y = null
+  pointer.absX = null;
+  pointer.absY = null
   pointer.hold = false
 })
 
