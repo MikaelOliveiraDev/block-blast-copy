@@ -209,10 +209,10 @@ class Piece extends DisplayObject {
     Piece.dragSound.play();
     this.scale = 1
 
-    const marginToPoiner = 50;
+    const marginToPoiner = 80;
 
     this.relX = 0;
-    this.relY = this.height / 2 - marginToPoiner;
+    this.relY = - this.height / 2 - marginToPoiner
   }
   onDrop() {
     const relTop = this.top - board.absY;
