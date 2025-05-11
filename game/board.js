@@ -27,7 +27,6 @@ class Board extends DisplayObject {
 
     return filledYs;
   }
-
   checkBoardXs() {
     const filledXs = [];
 
@@ -55,7 +54,6 @@ class Board extends DisplayObject {
     combo.play();
     combo.increase();
   }
-
   clearAlongX(indexX) {
     let targetScore = 0;
     for (let indexY = 0; indexY < this.yLength; indexY++) {
@@ -92,7 +90,7 @@ class Board extends DisplayObject {
   }
 
   draw(ctx) {
-    const colors = ["#a3a3a3", "#949494"];
+    const colors = ["#4b4b4b", "#525252"];
     for (let indexY = 0; indexY < this.grid.length; indexY++) {
       for (let indexX = 0; indexX < this.grid[indexY].length; indexX++) {
         let evenOdd = (indexY + indexX) % 2;

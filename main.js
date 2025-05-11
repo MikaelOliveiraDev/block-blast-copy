@@ -443,37 +443,52 @@ class Sound {
   }
 }
 
-canvas.addEventListener("pointerdown", (ev) => {
-  ev.preventDefault();
-  const rect = canvas.getBoundingClientRect();
 
-  pointer.absX = ev.clientX - rect.left;
-  pointer.absY = ev.clientY - rect.top;
-  pointer.hold = 0;
-
-  pointer.checkDown();
-});
-canvas.addEventListener("pointermove", (ev) => {
-  ev.preventDefault();
-
+function updatePointerPosition(ev) {
   const rect = ev.target.getBoundingClientRect();
-  pointer.absX = ev.clientX - rect.left;
-  pointer.absY = ev.clientY - rect.top;
-});
-canvas.addEventListener("pointerup", (ev) => {
-  if (pointer.dragging) pointer.drop();
+  const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX
+  const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY
+  pointer.absX = clientX - rect.left;
+  pointer.absY = clientY - rect.top;
+}
 
+function handleDown(ev) {
+  ev.preventDefault();
+  updatePointerPosition(ev);
+  pointer.hold = 0;
+  pointer.checkDown();
+}
+
+function handleMove(ev) {
+  ev.preventDefault();
+  updatePointerPosition(ev);
+}
+
+function handleUp() {
+  if (pointer.dragging) pointer.drop();
   pointer.absX = null;
   pointer.absY = null;
   pointer.hold = false;
-});
-canvas.addEventListener("pointerleave", (ev) => {
-  if (pointer.dragging) pointer.drop();
+}
 
+function handleLeave() {
+  if (pointer.dragging) pointer.drop();
   pointer.absX = null;
   pointer.absY = null;
   pointer.hold = false;
-});
+}
+
+// Mouse events
+canvas.addEventListener("mousedown", handleDown);
+canvas.addEventListener("mousemove", handleMove);
+canvas.addEventListener("mouseup", handleUp);
+canvas.addEventListener("mouseleave", handleLeave);
+
+// Touch events
+canvas.addEventListener("touchstart", handleDown);
+canvas.addEventListener("touchmove", handleMove);
+canvas.addEventListener("touchend", handleUp);
+canvas.addEventListener("touchcancel", handleLeave);
 
 canvas.height = 800;
 canvas.width = 450;
